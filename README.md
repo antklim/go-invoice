@@ -24,5 +24,3 @@ The following table shows the invoice status transitions:
 |Open    | NO   | YES    | YES    |
 |Issued  | NO   | NO     | YES    |
 |Closed  | NO   | NO     | NO     |
-
-The application stores data as a history of all operations.
