@@ -1,7 +1,7 @@
 # go-invoice
 
 Go-invoice is a simple invoice management application. A user can create, update, issue and close the invoice.
-The invoice contains such information as ID, number, customer name and a list of items. The invoice item has its own ID and a product information such as SKU, product name, price and quantity.
+The invoice contains such information as ID, customer name and a list of items. The invoice item has its own ID and a product information such as SKU, product name, price and quantity.
 
 When invoice created its open to updates:
 - customer name and date can be updated

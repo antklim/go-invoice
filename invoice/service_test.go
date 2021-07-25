@@ -1,9 +1,81 @@
 package invoice_test
 
-import "testing"
+import (
+	"testing"
+	"time"
+
+	"github.com/antklim/go-invoice/invoice"
+)
 
 func TestCreateInvoice(t *testing.T) {
-	t.Run("created invoice is in open status", func(t *testing.T) {
+	srv := &invoice.Service{}
+
+	t.Run("created invoice should be valid", func(t *testing.T) {
+		date, err := time.Parse("2006-01-02", "2021-05-01")
+		if err != nil {
+			t.Fatalf("Error parsing invoice date: %v", err)
+		}
+
+		inv, err := srv.CreateInvoice("John Doe", date)
+		if err != nil {
+			t.Fatalf("Error creating invoice: %v", err)
+		}
+
+		if inv.ID == "" {
+			t.Fatal("invoice.ID should not be empty")
+		}
+
+		if inv.CustomerName != "John Doe" {
+			t.Fatalf("invoice.CustomerName = %s, want John Doe", inv.CustomerName)
+		}
+
+		if !inv.Date.Equal(date) {
+			t.Fatalf("invoice.Date = %s, want = %s", inv.Date.Format(time.RFC3339), date.Format(time.RFC3339))
+		}
+
+		if status := inv.Status; status != "open" {
+			t.Fatalf("invoice.Status should be open, but got=%s", status)
+		}
+
+		if !inv.CreatedAt.Equal(inv.UpdatedAt) {
+			t.Fatalf("invoice.CreatedAt = %s is not equalt to invoice.UpdatedAt = %s",
+				inv.CreatedAt.Format(time.RFC3339),
+				inv.UpdatedAt.Format(time.RFC3339))
+		}
+	})
+
+	t.Run("stores invoice in data storage", func(t *testing.T) {
+		// t.Log("not implemented")
+		// t.Fail()
+	})
+
+	t.Run("propagates data storage errors", func(t *testing.T) {
+		// t.Log("not implemented")
+		// t.Fail()
+	})
+}
+
+func TestGetInvoice(t *testing.T) {
+	t.Run("returns nothing when no invoice found", func(t *testing.T) {
+		t.Log("not implemented")
+		t.Fail()
+	})
+
+	t.Run("propagates data storage errors", func(t *testing.T) {
+		t.Log("not implemented")
+		t.Fail()
+	})
+}
+
+func TestUpdateInvoice(t *testing.T) {
+	t.Run("propagates data storage errors", func(t *testing.T) {
+		t.Log("not implemented")
+		t.Fail()
+	})
+}
+
+func TestCloseInvoice(t *testing.T) {
+	t.Run("propagates data storage errors", func(t *testing.T) {
 		t.Log("not implemented")
 		t.Fail()
 	})
