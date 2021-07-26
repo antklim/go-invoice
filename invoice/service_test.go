@@ -45,16 +45,16 @@ func TestCreateInvoice(t *testing.T) {
 			t.Fatal("invoice.ID should not be empty")
 		}
 
-		if inv.CustomerName != "John Doe" {
-			t.Fatalf("invoice.CustomerName = %s, want John Doe", inv.CustomerName)
+		if expected := "John Doe"; inv.CustomerName != expected {
+			t.Fatalf("invalid invoice.CustomerName: want=%s, but got=%s", expected, inv.CustomerName)
 		}
 
 		if !inv.Date.Equal(invDate) {
-			t.Fatalf("invoice.Date = %s, want = %s", inv.Date.Format(time.RFC3339), invDate.Format(time.RFC3339))
+			t.Fatalf("invalid invoice.Date: want=%s, but got=%s", invDate.Format(time.RFC3339), inv.Date.Format(time.RFC3339))
 		}
 
-		if status := inv.Status; status != "open" {
-			t.Fatalf("invoice.Status should be open, but got=%s", status)
+		if expected := "open"; inv.Status != expected {
+			t.Fatalf("invalid invoice.Status: want=%s, but got=%s", expected, inv.Status)
 		}
 
 		if !inv.CreatedAt.Equal(inv.UpdatedAt) {
