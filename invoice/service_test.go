@@ -97,7 +97,7 @@ func TestCreateInvoice(t *testing.T) {
 }
 
 func TestViewInvoice(t *testing.T) {
-	t.Run("returns a zero invoice when no invoice found in data storage", func(t *testing.T) {
+	t.Run("returns a zero invoice when no invoice is found in data storage", func(t *testing.T) {
 		srv := invoice.NewService(&testStorage{})
 		inv, err := srv.ViewInvoice("37f86bef-041d-4e50-aaf7-b1a066123751")
 		if err != nil {
