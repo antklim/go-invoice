@@ -11,7 +11,7 @@ const (
 type Invoice struct {
 	ID           string
 	CustomerName string
-	Date         time.Time
+	Date         time.Time // issue date
 	Status       string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
