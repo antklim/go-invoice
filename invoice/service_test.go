@@ -151,11 +151,6 @@ func TestOpenInvoice(t *testing.T) {
 			t.Fail()
 		})
 
-		t.Run("date can be updated", func(t *testing.T) {
-			t.Log("not implemented")
-			t.Fail()
-		})
-
 		t.Run("items can be added", func(t *testing.T) {
 			t.Log("not implemented")
 			t.Fail()
@@ -164,6 +159,18 @@ func TestOpenInvoice(t *testing.T) {
 		t.Run("items can be deleted", func(t *testing.T) {
 			// when deleting non existent item it does not return error
 			// error returned only in case of data access layer
+			t.Log("not implemented")
+			t.Fail()
+		})
+	})
+
+	t.Run("cannot be updated", func(t *testing.T) {
+		t.Run("issue date cannot be updated", func(t *testing.T) {
+			t.Log("not implemented")
+			t.Fail()
+		})
+
+		t.Run("items cannot be updated", func(t *testing.T) {
 			t.Log("not implemented")
 			t.Fail()
 		})
