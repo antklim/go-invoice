@@ -139,6 +139,7 @@ func TestCloseInvoice(t *testing.T) {
 	})
 }
 
+// Following are the business rules tests
 func TestOpenInvoice(t *testing.T) {
 	t.Run("can be viewed", func(t *testing.T) {
 		t.Log("not implemented")
@@ -181,12 +182,12 @@ func TestOpenInvoice(t *testing.T) {
 		t.Fail()
 	})
 
-	t.Run("can be closed (cancel)", func(t *testing.T) {
+	t.Run("can be cancelled", func(t *testing.T) {
 		t.Log("not implemented")
 		t.Fail()
 	})
 
-	t.Run("cannot be closed (paid)", func(t *testing.T) {
+	t.Run("cannot be paid", func(t *testing.T) {
 		t.Log("not implemented")
 		t.Fail()
 	})
@@ -204,7 +205,7 @@ func TestIssuedInvoice(t *testing.T) {
 			t.Fail()
 		})
 
-		t.Run("date cannot be updated", func(t *testing.T) {
+		t.Run("issue date cannot be updated", func(t *testing.T) {
 			t.Log("not implemented")
 			t.Fail()
 		})
@@ -225,12 +226,12 @@ func TestIssuedInvoice(t *testing.T) {
 		t.Fail()
 	})
 
-	t.Run("can be closed (cancel)", func(t *testing.T) {
+	t.Run("can be cancelled", func(t *testing.T) {
 		t.Log("not implemented")
 		t.Fail()
 	})
 
-	t.Run("can be closed (paid)", func(t *testing.T) {
+	t.Run("can be paid", func(t *testing.T) {
 		t.Log("not implemented")
 		t.Fail()
 	})
@@ -248,7 +249,7 @@ func TestClosedInvoice(t *testing.T) {
 			t.Fail()
 		})
 
-		t.Run("date cannot be updated", func(t *testing.T) {
+		t.Run("issue date cannot be updated", func(t *testing.T) {
 			t.Log("not implemented")
 			t.Fail()
 		})
@@ -269,12 +270,12 @@ func TestClosedInvoice(t *testing.T) {
 		t.Fail()
 	})
 
-	t.Run("cannot be closed (cancel)", func(t *testing.T) {
+	t.Run("cannot be cancelled", func(t *testing.T) {
 		t.Log("not implemented")
 		t.Fail()
 	})
 
-	t.Run("cannot be closed (paid)", func(t *testing.T) {
+	t.Run("cannot be paid", func(t *testing.T) {
 		t.Log("not implemented")
 		t.Fail()
 	})
