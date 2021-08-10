@@ -1,8 +1,6 @@
 package invoice
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
@@ -20,9 +18,9 @@ func NewService(storage Storage) Service {
 	return Service{storage: storage}
 }
 
-func (s Service) CreateInvoice(customerName string, date time.Time) (Invoice, error) {
+func (s Service) CreateInvoice(customerName string) (Invoice, error) {
 	invID := uuid.NewString()
-	inv := createInvoice(invID, customerName, date)
+	inv := createInvoice(invID, customerName)
 	err := s.storage.AddInvoice(inv)
 	if err != nil {
 		return Invoice{}, errors.Wrap(err, "failed to store invoice")

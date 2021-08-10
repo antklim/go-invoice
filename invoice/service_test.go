@@ -29,14 +29,9 @@ func (storage testStorage) GetInvoice(id string) (invoice.Invoice, error) {
 var testErrStorage = &testStorage{e: errors.New("storage error")}
 
 func TestCreateInvoice(t *testing.T) {
-	invDate, err := time.Parse("2006-01-02", "2021-05-01")
-	if err != nil {
-		t.Fatalf("Error parsing invoice date: %v", err)
-	}
-
 	t.Run("creates valid invoice", func(t *testing.T) {
 		srv := invoice.NewService(&testStorage{})
-		inv, err := srv.CreateInvoice("John Doe", invDate)
+		inv, err := srv.CreateInvoice("John Doe")
 		if err != nil {
 			t.Fatalf("Error creating invoice: %v", err)
 		}
@@ -45,12 +40,12 @@ func TestCreateInvoice(t *testing.T) {
 			t.Fatal("invoice.ID should not be empty")
 		}
 
-		if expected := "John Doe"; inv.CustomerName != expected {
-			t.Fatalf("invalid invoice.CustomerName: want=%s, but got=%s", expected, inv.CustomerName)
+		if inv.Date != nil {
+			t.Fatalf("invoice.Date should be nil")
 		}
 
-		if !inv.Date.Equal(invDate) {
-			t.Fatalf("invalid invoice.Date: want=%s, but got=%s", invDate.Format(time.RFC3339), inv.Date.Format(time.RFC3339))
+		if expected := "John Doe"; inv.CustomerName != expected {
+			t.Fatalf("invalid invoice.CustomerName: want=%s, but got=%s", expected, inv.CustomerName)
 		}
 
 		if expected := "open"; inv.Status != expected {
@@ -66,7 +61,7 @@ func TestCreateInvoice(t *testing.T) {
 
 	t.Run("stores invoice in data storage", func(t *testing.T) {
 		srv := invoice.NewService(&testStorage{})
-		inv, err := srv.CreateInvoice("John Doe", invDate)
+		inv, err := srv.CreateInvoice("John Doe")
 		if err != nil {
 			t.Fatalf("Error creating invoice: %v", err)
 		}
@@ -83,7 +78,7 @@ func TestCreateInvoice(t *testing.T) {
 
 	t.Run("propagates data storage errors", func(t *testing.T) {
 		srv := invoice.NewService(testErrStorage)
-		inv, err := srv.CreateInvoice("Doe John", invDate)
+		inv, err := srv.CreateInvoice("Doe John")
 		expectedErr := "failed to store invoice: storage error"
 		if err.Error() != expectedErr {
 			t.Fatalf("err is %v, want = %s", err, expectedErr)
@@ -179,6 +174,7 @@ func TestOpenInvoice(t *testing.T) {
 
 	t.Run("can be issued", func(t *testing.T) {
 		t.Log("not implemented")
+		// verify issue date is set
 		t.Fail()
 	})
 
