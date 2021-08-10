@@ -35,3 +35,15 @@ func (s Service) ViewInvoice(id string) (Invoice, error) {
 	}
 	return inv, nil
 }
+
+func (s Service) UpdateInvoiceCustomer(id, name string) error {
+	return errors.New("not implemented")
+}
+
+func (s Service) CancelInvoice(id string) error {
+	return errors.New("not implemented")
+}
+
+func (s Service) PayInvoice(id string) error {
+	return errors.New("not implemented")
+}

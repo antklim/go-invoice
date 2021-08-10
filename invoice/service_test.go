@@ -122,15 +122,32 @@ func TestViewInvoice(t *testing.T) {
 
 func TestUpdateInvoice(t *testing.T) {
 	t.Run("propagates data storage errors", func(t *testing.T) {
-		t.Log("not implemented")
-		t.Fail()
+		srv := invoice.NewService(testErrStorage)
+		err := srv.UpdateInvoiceCustomer("37f86bef-041d-4e50-aaf7-b1a066123751", "Foo Bar")
+		expectedErr := "failed to update invoice: storage error"
+		if err.Error() != expectedErr {
+			t.Fatalf("err is %v, want = %s", err, expectedErr)
+		}
 	})
 }
 
 func TestCloseInvoice(t *testing.T) {
-	t.Run("propagates data storage errors", func(t *testing.T) {
-		t.Log("not implemented")
-		t.Fail()
+	t.Run("propagates data storage errors when cancelling invoice", func(t *testing.T) {
+		srv := invoice.NewService(testErrStorage)
+		err := srv.CancelInvoice("37f86bef-041d-4e50-aaf7-b1a066123751")
+		expectedErr := "failed to cancel invoice: storage error"
+		if err.Error() != expectedErr {
+			t.Fatalf("err is %v, want = %s", err, expectedErr)
+		}
+	})
+
+	t.Run("propagates data storage errors when paying invoice", func(t *testing.T) {
+		srv := invoice.NewService(testErrStorage)
+		err := srv.PayInvoice("37f86bef-041d-4e50-aaf7-b1a066123751")
+		expectedErr := "failed to pay invoice: storage error"
+		if err.Error() != expectedErr {
+			t.Fatalf("err is %v, want = %s", err, expectedErr)
+		}
 	})
 }
 
