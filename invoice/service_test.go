@@ -5,11 +5,13 @@ import (
 	"time"
 
 	"github.com/antklim/go-invoice/invoice"
+	"github.com/google/uuid"
 )
 
 func TestCreateInvoice(t *testing.T) {
+	srv := invoice.Service{}
+
 	t.Run("creates valid invoice", func(t *testing.T) {
-		srv := invoice.Service{}
 		inv, err := srv.CreateInvoice("John Doe")
 		if err != nil {
 			t.Fatalf("error creating invoice: %v", err)
@@ -38,13 +40,36 @@ func TestCreateInvoice(t *testing.T) {
 		}
 	})
 
-	t.Run("stores invoice in data storage", func(t *testing.T) {})
-
 	t.Run("propagates data storage errors", func(t *testing.T) {})
 }
 
 func TestViewInvoice(t *testing.T) {
-	t.Run("returns a zero invoice when no invoice is found in data storage", func(t *testing.T) {})
+	srv := invoice.Service{}
+
+	t.Run("returns a zero invoice when no invoice is found in data storage", func(t *testing.T) {
+		inv, err := srv.ViewInvoice(uuid.Nil.String())
+		if err != nil {
+			t.Fatalf("error viewing invoice: %v", err)
+		}
+		if !inv.Nil() {
+			t.Fatalf("invalid invoice: should be empty, but got=%v", err)
+		}
+	})
+
+	t.Run("returns invoice from data storage", func(t *testing.T) {
+		inv, err := srv.CreateInvoice("John Doe")
+		if err != nil {
+			t.Fatalf("error creating invoice: %v", err)
+		}
+
+		vinv, err := srv.ViewInvoice(inv.ID)
+		if err != nil {
+			t.Fatalf("error viewing invoice: %v", err)
+		}
+		if !vinv.Equal(inv) {
+			t.Fatalf("invalid invoice: want=%v, but got=%v", inv, vinv)
+		}
+	})
 
 	t.Run("propagates data storage errors", func(t *testing.T) {})
 }

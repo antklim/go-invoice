@@ -21,6 +21,29 @@ type Invoice struct {
 	UpdatedAt    time.Time
 }
 
+func (inv Invoice) Nil() bool {
+	return inv.ID == "" &&
+		inv.CustomerName == "" &&
+		inv.Date == nil &&
+		inv.Status == Open
+}
+
+func (inv Invoice) Equal(other Invoice) bool {
+	var invDatesEqual bool
+	if inv.Date == nil && other.Date == nil {
+		invDatesEqual = true
+	} else if inv.Date != nil && other.Date != nil {
+		invDatesEqual = inv.Date.Equal(*other.Date)
+	}
+
+	return inv.ID == other.ID &&
+		inv.CustomerName == other.CustomerName &&
+		invDatesEqual &&
+		inv.Status == other.Status &&
+		inv.CreatedAt.Equal(other.CreatedAt) &&
+		inv.UpdatedAt.Equal(other.UpdatedAt)
+}
+
 func createInvoice(id, customer string) Invoice {
 	now := time.Now()
 	return Invoice{

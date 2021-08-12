@@ -1,19 +1,44 @@
 package invoice
 
 import (
+	"fmt"
+	"sync"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+)
+
+var (
+	mu       sync.RWMutex // guards invoices
+	invoices map[string]Invoice
 )
 
 type Service struct{}
 
 func (s Service) CreateInvoice(customerName string) (Invoice, error) {
 	invID := uuid.NewString()
-	return createInvoice(invID, customerName), nil
+	inv := createInvoice(invID, customerName)
+
+	mu.Lock()
+	defer mu.Unlock()
+	if invoices == nil {
+		invoices = make(map[string]Invoice)
+	}
+	if _, ok := invoices[inv.ID]; ok {
+		return Invoice{}, fmt.Errorf("store invoice: ID %q exists", inv.ID)
+	}
+	invoices[inv.ID] = inv
+
+	return inv, nil
 }
 
 func (s Service) ViewInvoice(id string) (Invoice, error) {
-	return Invoice{}, errors.New("not implemented")
+	mu.RLock()
+	defer mu.RUnlock()
+	if invoices == nil {
+		return Invoice{}, nil
+	}
+	return invoices[id], nil
 }
 
 func (s Service) UpdateInvoiceCustomer(id, name string) error {
