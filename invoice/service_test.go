@@ -27,8 +27,8 @@ func TestCreateInvoice(t *testing.T) {
 			t.Fatalf("invalid invoice.CustomerName: want=%s, but got=%s", expected, inv.CustomerName)
 		}
 
-		if expected := "open"; inv.Status != expected {
-			t.Fatalf("invalid invoice.Status: want=%s, but got=%s", expected, inv.Status)
+		if expected := invoice.Open; inv.Status != expected {
+			t.Fatalf("invalid invoice.Status: want=%d, but got=%d", expected, inv.Status)
 		}
 
 		if !inv.CreatedAt.Equal(inv.UpdatedAt) {

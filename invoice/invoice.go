@@ -2,17 +2,21 @@ package invoice
 
 import "time"
 
+type Status int
+
 const (
-	invoiceOpen   = "open"
-	invoiceIssued = "issued"
-	invoiceClosed = "closed"
+	Open Status = iota
+	Issued
+	Closed
 )
+
+var statuses = [...]string{Open: "open", Issued: "issued", Closed: "closed"}
 
 type Invoice struct {
 	ID           string
 	CustomerName string
 	Date         *time.Time // issue date
-	Status       string
+	Status       Status
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -22,7 +26,7 @@ func createInvoice(id, customer string) Invoice {
 	return Invoice{
 		ID:           id,
 		CustomerName: customer,
-		Status:       invoiceOpen,
+		Status:       Open,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}
