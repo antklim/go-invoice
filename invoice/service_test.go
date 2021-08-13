@@ -51,7 +51,7 @@ func TestViewInvoice(t *testing.T) {
 		if err != nil {
 			t.Fatalf("error viewing invoice: %v", err)
 		}
-		if !inv.Nil() {
+		if inv != nil {
 			t.Fatalf("invalid invoice: should be empty, but got=%v", err)
 		}
 	})

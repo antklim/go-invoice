@@ -32,13 +32,17 @@ func (s Service) CreateInvoice(customerName string) (Invoice, error) {
 	return inv, nil
 }
 
-func (s Service) ViewInvoice(id string) (Invoice, error) {
+func (s Service) ViewInvoice(id string) (*Invoice, error) {
 	mu.RLock()
 	defer mu.RUnlock()
 	if invoices == nil {
-		return Invoice{}, nil
+		return nil, nil
 	}
-	return invoices[id], nil
+	inv, ok := invoices[id]
+	if !ok {
+		return nil, nil
+	}
+	return &inv, nil
 }
 
 func (s Service) UpdateInvoiceCustomer(id, name string) error {

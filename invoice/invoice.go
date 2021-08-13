@@ -21,14 +21,7 @@ type Invoice struct {
 	UpdatedAt    time.Time
 }
 
-func (inv Invoice) Nil() bool {
-	return inv.ID == "" &&
-		inv.CustomerName == "" &&
-		inv.Date == nil &&
-		inv.Status == Open
-}
-
-func (inv Invoice) Equal(other Invoice) bool {
+func (inv *Invoice) Equal(other Invoice) bool {
 	var invDatesEqual bool
 	if inv.Date == nil && other.Date == nil {
 		invDatesEqual = true
