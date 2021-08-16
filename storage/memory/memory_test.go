@@ -22,3 +22,28 @@ func TestAddInvoice(t *testing.T) {
 		t.Errorf("second call AddInvoice(%v) = %v, want %v", inv, got, want)
 	}
 }
+
+func TestViewInvoice(t *testing.T) {
+	inv := invoice.NewInvoice("123", "customer")
+
+	strg := storage.New()
+	vinv, err := strg.FindInvoice(inv.ID)
+	if err != nil {
+		t.Errorf("FindInvoice(%q) failed: %v", inv.ID, err)
+	}
+	if vinv != nil {
+		t.Errorf("FindInvoice(%q) no invoice expected, got %v", inv.ID, vinv)
+	}
+
+	if err := strg.AddInvoice(inv); err != nil {
+		t.Errorf("AddInvoice(%v) failed: %v", inv, err)
+	}
+
+	vinv, err = strg.FindInvoice(inv.ID)
+	if err != nil {
+		t.Errorf("FindInvoice(%q) failed: %v", inv.ID, err)
+	}
+	if vinv == nil {
+		t.Errorf("FindInvoice(%q) invoice expected, got nil", inv.ID)
+	}
+}

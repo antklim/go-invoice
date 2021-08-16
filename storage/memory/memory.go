@@ -25,3 +25,15 @@ func (memo *memory) AddInvoice(inv invoice.Invoice) error {
 	memo.records[inv.ID] = inv
 	return nil
 }
+
+func (memo *memory) FindInvoice(id string) (*invoice.Invoice, error) {
+	memo.RLock()
+	defer memo.RUnlock()
+
+	inv, ok := memo.records[id]
+	if !ok {
+		return nil, nil
+	}
+
+	return &inv, nil
+}
