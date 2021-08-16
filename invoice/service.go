@@ -17,7 +17,7 @@ type Service struct{}
 
 func (s Service) CreateInvoice(customerName string) (Invoice, error) {
 	invID := uuid.NewString()
-	inv := createInvoice(invID, customerName)
+	inv := NewInvoice(invID, customerName)
 
 	mu.Lock()
 	defer mu.Unlock()

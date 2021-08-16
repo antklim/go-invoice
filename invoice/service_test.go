@@ -12,9 +12,10 @@ func TestCreateInvoice(t *testing.T) {
 	srv := invoice.Service{}
 
 	t.Run("creates valid invoice", func(t *testing.T) {
+		customer := "John Doe"
 		inv, err := srv.CreateInvoice("John Doe")
 		if err != nil {
-			t.Fatalf("error creating invoice: %v", err)
+			t.Fatalf("CreateInvoice(%q) failed: %v", customer, err)
 		}
 
 		if inv.ID == "" {
@@ -25,12 +26,12 @@ func TestCreateInvoice(t *testing.T) {
 			t.Fatalf("invoice.Date should be nil")
 		}
 
-		if expected := "John Doe"; inv.CustomerName != expected {
-			t.Fatalf("invalid invoice.CustomerName: want=%s, but got=%s", expected, inv.CustomerName)
+		if got, want := inv.CustomerName, "John Doe"; got != want {
+			t.Fatalf("invalid invoice.CustomerName: got %q, want %q", got, want)
 		}
 
-		if expected := invoice.Open; inv.Status != expected {
-			t.Fatalf("invalid invoice.Status: want=%d, but got=%d", expected, inv.Status)
+		if got, want := inv.Status, invoice.Open; got != want {
+			t.Fatalf("invalid invoice.Status: got %d, want %d", got, want)
 		}
 
 		if !inv.CreatedAt.Equal(inv.UpdatedAt) {

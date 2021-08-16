@@ -37,7 +37,7 @@ func (inv *Invoice) Equal(other Invoice) bool {
 		inv.UpdatedAt.Equal(other.UpdatedAt)
 }
 
-func createInvoice(id, customer string) Invoice {
+func NewInvoice(id, customer string) Invoice {
 	now := time.Now()
 	return Invoice{
 		ID:           id,
