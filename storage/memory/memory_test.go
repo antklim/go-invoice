@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	"github.com/antklim/go-invoice/invoice"
-	storage "github.com/antklim/go-invoice/storage/memory"
+	"github.com/antklim/go-invoice/storage/memory"
 )
 
 func TestAddInvoice(t *testing.T) {
 	inv := invoice.NewInvoice("123", "customer")
 
-	strg := storage.New()
+	strg := memory.New()
 	if err := strg.AddInvoice(inv); err != nil {
 		t.Errorf("AddInvoice(%v) failed: %v", inv, err)
 	}
@@ -26,7 +26,7 @@ func TestAddInvoice(t *testing.T) {
 func TestViewInvoice(t *testing.T) {
 	inv := invoice.NewInvoice("123", "customer")
 
-	strg := storage.New()
+	strg := memory.New()
 	vinv, err := strg.FindInvoice(inv.ID)
 	if err != nil {
 		t.Errorf("FindInvoice(%q) failed: %v", inv.ID, err)

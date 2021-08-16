@@ -7,16 +7,16 @@ import (
 	"github.com/antklim/go-invoice/invoice"
 )
 
-type memory struct {
+type Memory struct {
 	sync.RWMutex // guards records
 	records      map[string]invoice.Invoice
 }
 
-func New() invoice.Storage {
-	return &memory{records: make(map[string]invoice.Invoice)}
+func New() *Memory {
+	return &Memory{records: make(map[string]invoice.Invoice)}
 }
 
-func (memo *memory) AddInvoice(inv invoice.Invoice) error {
+func (memo *Memory) AddInvoice(inv invoice.Invoice) error {
 	memo.Lock()
 	defer memo.Unlock()
 	if _, ok := memo.records[inv.ID]; ok {
@@ -26,7 +26,7 @@ func (memo *memory) AddInvoice(inv invoice.Invoice) error {
 	return nil
 }
 
-func (memo *memory) FindInvoice(id string) (*invoice.Invoice, error) {
+func (memo *Memory) FindInvoice(id string) (*invoice.Invoice, error) {
 	memo.RLock()
 	defer memo.RUnlock()
 

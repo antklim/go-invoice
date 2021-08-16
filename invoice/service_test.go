@@ -5,11 +5,13 @@ import (
 	"time"
 
 	"github.com/antklim/go-invoice/invoice"
+	"github.com/antklim/go-invoice/storage"
 	"github.com/google/uuid"
 )
 
 func TestCreateInvoice(t *testing.T) {
-	srv := invoice.Service{}
+	strg, _ := storage.Factory("memory")
+	srv := invoice.New(strg)
 
 	t.Run("creates valid invoice", func(t *testing.T) {
 		customer := "John Doe"
@@ -45,7 +47,8 @@ func TestCreateInvoice(t *testing.T) {
 }
 
 func TestViewInvoice(t *testing.T) {
-	srv := invoice.Service{}
+	strg, _ := storage.Factory("memory")
+	srv := invoice.New(strg)
 
 	t.Run("returns a zero invoice when no invoice is found in data storage", func(t *testing.T) {
 		inv, err := srv.ViewInvoice(uuid.Nil.String())
@@ -80,7 +83,7 @@ func TestUpdateInvoice(t *testing.T) {
 }
 
 func TestCloseInvoice(t *testing.T) {
-	t.Run("propagates data storage errors when cancelling invoice", func(t *testing.T) {})
+	t.Run("propagates data storage errors when canceling invoice", func(t *testing.T) {})
 
 	t.Run("propagates data storage errors when paying invoice", func(t *testing.T) {})
 }
@@ -110,7 +113,7 @@ func TestOpenInvoice(t *testing.T) {
 		// verify issue date is set
 	})
 
-	t.Run("can be cancelled", func(t *testing.T) {})
+	t.Run("can be canceled", func(t *testing.T) {})
 
 	t.Run("cannot be paid", func(t *testing.T) {})
 }
@@ -130,7 +133,7 @@ func TestIssuedInvoice(t *testing.T) {
 
 	t.Run("cannot be issued", func(t *testing.T) {})
 
-	t.Run("can be cancelled", func(t *testing.T) {})
+	t.Run("can be canceled", func(t *testing.T) {})
 
 	t.Run("can be paid", func(t *testing.T) {})
 }
@@ -150,7 +153,7 @@ func TestClosedInvoice(t *testing.T) {
 
 	t.Run("cannot be issued", func(t *testing.T) {})
 
-	t.Run("cannot be cancelled", func(t *testing.T) {})
+	t.Run("cannot be canceled", func(t *testing.T) {})
 
 	t.Run("cannot be paid", func(t *testing.T) {})
 }

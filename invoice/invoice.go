@@ -4,13 +4,12 @@ import "time"
 
 type Status int
 
+// Supported invoice statuses
 const (
 	Open Status = iota
 	Issued
 	Closed
 )
-
-var statuses = [...]string{Open: "open", Issued: "issued", Closed: "closed"}
 
 type Invoice struct {
 	ID           string
