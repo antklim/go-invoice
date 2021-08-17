@@ -3,6 +3,7 @@ package memory
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/antklim/go-invoice/invoice"
 )
@@ -36,4 +37,20 @@ func (memo *Memory) FindInvoice(id string) (*invoice.Invoice, error) {
 	}
 
 	return &inv, nil
+}
+
+func (memo *Memory) UpdateInvoice(inv invoice.Invoice) error {
+	memo.Lock()
+	defer memo.Unlock()
+
+	r, ok := memo.records[inv.ID]
+	if !ok {
+		return fmt.Errorf("invoice %q not found", inv.ID)
+	}
+
+	inv.CreatedAt = r.CreatedAt
+	inv.UpdatedAt = time.Now()
+	memo.records[inv.ID] = inv
+
+	return nil
 }

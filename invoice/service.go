@@ -1,6 +1,8 @@
 package invoice
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
@@ -25,7 +27,20 @@ func (s *Service) ViewInvoice(id string) (*Invoice, error) {
 }
 
 func (s *Service) UpdateInvoiceCustomer(id, name string) error {
-	return errors.New("not implemented")
+	inv, err := s.strg.FindInvoice(id)
+	if err != nil {
+		return errors.Wrapf(err, "find invoice %q failed", id)
+	}
+	if inv == nil {
+		return fmt.Errorf("invoice %q not found", id)
+	}
+
+	inv.CustomerName = name
+	if err := s.strg.UpdateInvoice(*inv); err != nil {
+		return errors.Wrapf(err, "update invoice %q failed", id)
+	}
+
+	return nil
 }
 
 func (s *Service) CancelInvoice(id string) error {
