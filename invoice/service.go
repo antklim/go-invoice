@@ -43,6 +43,14 @@ func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 	return nil
 }
 
+func (s *Service) AddInvoiceItem() error {
+	return errors.New("not implemented")
+}
+
+func (s *Service) DeleteInvoiceItem() error {
+	return errors.New("not implemented")
+}
+
 func (s *Service) CancelInvoice(id string) error {
 	return errors.New("not implemented")
 }

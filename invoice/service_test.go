@@ -50,7 +50,7 @@ func TestViewInvoice(t *testing.T) {
 	strg, _ := storage.Factory("memory")
 	srv := invoice.New(strg)
 
-	t.Run("returns a zero invoice when no invoice is found in data storage", func(t *testing.T) {
+	t.Run("returns nil when no invoice is found in data storage", func(t *testing.T) {
 		invID := uuid.Nil.String()
 		inv, err := srv.ViewInvoice(invID)
 		if err != nil {
@@ -64,14 +64,29 @@ func TestViewInvoice(t *testing.T) {
 	t.Run("propagates data storage errors", func(t *testing.T) {})
 }
 
-func TestUpdateInvoice(t *testing.T) {
-	t.Run("propagates data storage errors", func(t *testing.T) {})
+func TestUpdateInvoiceCustomerFails(t *testing.T) {
+	t.Run("when no invoice found", func(t *testing.T) {})
+	t.Run("when data storage error occurred", func(t *testing.T) {})
 }
 
-func TestCloseInvoice(t *testing.T) {
-	t.Run("propagates data storage errors when canceling invoice", func(t *testing.T) {})
+func TestAddInvoiceItemFails(t *testing.T) {
+	t.Run("when no invoice found", func(t *testing.T) {})
+	t.Run("when data storage error occurred", func(t *testing.T) {})
+}
 
-	t.Run("propagates data storage errors when paying invoice", func(t *testing.T) {})
+func TestDeleteInvoiceItemFails(t *testing.T) {
+	t.Run("when no invoice found", func(t *testing.T) {})
+	t.Run("when data storage error occurred", func(t *testing.T) {})
+}
+
+func TestPayInvoiceFails(t *testing.T) {
+	t.Run("when no invoice found", func(t *testing.T) {})
+	t.Run("when data storage error occurred", func(t *testing.T) {})
+}
+
+func TestCancelInvoiceFails(t *testing.T) {
+	t.Run("when no invoice found", func(t *testing.T) {})
+	t.Run("when data storage error occurred", func(t *testing.T) {})
 }
 
 // Following are the business rules tests
@@ -111,10 +126,6 @@ func TestOpenInvoice(t *testing.T) {
 			// when deleting non existent item it does not return error
 			// error returned only in case of data access layer
 		})
-	})
-
-	t.Run("cannot be updated", func(t *testing.T) {
-		t.Run("when invoice not found", func(t *testing.T) {})
 	})
 
 	t.Run("can be issued", func(t *testing.T) {
