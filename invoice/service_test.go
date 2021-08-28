@@ -61,6 +61,22 @@ func TestViewInvoice(t *testing.T) {
 		}
 	})
 
+	t.Run("returns invoice", func(t *testing.T) {
+		customer := "John Doe"
+		inv, err := srv.CreateInvoice(customer)
+		if err != nil {
+			t.Fatalf("CreateInvoice(%q) failed: %v", customer, err)
+		}
+
+		vinv, err := srv.ViewInvoice(inv.ID)
+		if err != nil {
+			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
+		}
+		if !vinv.Equal(inv) {
+			t.Errorf("invalid invoice %v, want %v", vinv, inv)
+		}
+	})
+
 	t.Run("propagates data storage errors", func(t *testing.T) {})
 }
 
@@ -94,16 +110,6 @@ func TestOpenInvoice(t *testing.T) {
 	strg, _ := storage.Factory("memory")
 	srv := invoice.New(strg)
 	inv, _ := srv.CreateInvoice("John Doe")
-
-	t.Run("can be viewed", func(t *testing.T) {
-		vinv, err := srv.ViewInvoice(inv.ID)
-		if err != nil {
-			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
-		}
-		if !vinv.Equal(inv) {
-			t.Errorf("invalid invoice %v, want %v", vinv, inv)
-		}
-	})
 
 	t.Run("can be updated", func(t *testing.T) {
 		t.Run("customer name can be updated", func(t *testing.T) {
