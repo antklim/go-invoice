@@ -7,6 +7,7 @@ import (
 
 	"github.com/antklim/go-invoice/invoice"
 	"github.com/antklim/go-invoice/storage"
+	invapi "github.com/antklim/go-invoice/test/api"
 	"github.com/google/uuid"
 )
 
@@ -50,6 +51,7 @@ func TestCreateInvoice(t *testing.T) {
 func TestViewInvoice(t *testing.T) {
 	strg, _ := storage.Factory("memory")
 	srv := invoice.New(strg)
+	invoiceAPI := invapi.NewIvoiceAPI(strg)
 
 	t.Run("returns nil when no invoice is found in data storage", func(t *testing.T) {
 		invID := uuid.Nil.String()
@@ -63,18 +65,17 @@ func TestViewInvoice(t *testing.T) {
 	})
 
 	t.Run("returns invoice", func(t *testing.T) {
-		customer := "John Doe"
-		inv, err := srv.CreateInvoice(customer)
+		invID, err := invoiceAPI.CreateInvoice()
 		if err != nil {
-			t.Fatalf("CreateInvoice(%q) failed: %v", customer, err)
+			t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
 		}
 
-		vinv, err := srv.ViewInvoice(inv.ID)
+		vinv, err := srv.ViewInvoice(invID)
 		if err != nil {
-			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
+			t.Fatalf("ViewInvoice(%q) failed: %v", invID, err)
 		}
-		if !vinv.Equal(inv) {
-			t.Errorf("invalid invoice %v, want %v", vinv, inv)
+		if vinv.ID != invID {
+			t.Errorf("invalid invoice.ID %s, want %s", vinv.ID, invID)
 		}
 	})
 
@@ -84,6 +85,7 @@ func TestViewInvoice(t *testing.T) {
 func TestUpdateInvoiceCustomer(t *testing.T) {
 	strg, _ := storage.Factory("memory")
 	srv := invoice.New(strg)
+	invoiceAPI := invapi.NewIvoiceAPI(strg)
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
@@ -104,7 +106,31 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 		// update failed
 	})
 
-	t.Run("successfully updates customer name of open invoice", func(t *testing.T) {})
+	t.Run("successfully updates customer name of open invoice", func(t *testing.T) {
+		// place open invoice
+		invID, err := invoiceAPI.CreateInvoice(
+			invapi.WithCustomerName("John Doe"),
+			invapi.WithStatus(invoice.Open),
+		)
+		if err != nil {
+			t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
+		}
+
+		// update customer name
+		customer := "John Wick"
+		if err := srv.UpdateInvoiceCustomer(invID, customer); err != nil {
+			t.Fatalf("UpdateCustomer(%q) failed: %v", customer, err)
+		}
+
+		// validate that customer name updated
+		inv, err := srv.ViewInvoice(invID)
+		if err != nil {
+			t.Fatalf("ViewInvoice(%q) failed: %v", invID, err)
+		}
+		if inv.CustomerName != customer {
+			t.Errorf("invalid invoice.CustomerName %q, want %q", inv.CustomerName, customer)
+		}
+	})
 }
 
 func TestAddInvoiceItemFails(t *testing.T) {
@@ -129,25 +155,7 @@ func TestCancelInvoiceFails(t *testing.T) {
 
 // Following are the business rules tests
 func TestOpenInvoice(t *testing.T) {
-	strg, _ := storage.Factory("memory")
-	srv := invoice.New(strg)
-	inv, _ := srv.CreateInvoice("John Doe")
-
 	t.Run("can be updated", func(t *testing.T) {
-		t.Run("customer name can be updated", func(t *testing.T) {
-			newCustomer := "John Wick"
-			if err := srv.UpdateInvoiceCustomer(inv.ID, newCustomer); err != nil {
-				t.Fatalf("UpdateCustomer(%q) failed: %v", newCustomer, err)
-			}
-			vinv, err := srv.ViewInvoice(inv.ID)
-			if err != nil {
-				t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
-			}
-			if vinv.CustomerName != newCustomer {
-				t.Errorf("invalid invoice.CustomerName %q, want %q", vinv.CustomerName, newCustomer)
-			}
-		})
-
 		t.Run("items can be added", func(t *testing.T) {})
 
 		t.Run("items can be deleted", func(t *testing.T) {
