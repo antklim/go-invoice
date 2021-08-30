@@ -12,6 +12,13 @@ const (
 	Canceled
 )
 
+var statuses = [...]string{
+	Open:     "open",
+	Issued:   "issued",
+	Paid:     "paid",
+	Canceled: "canceled",
+}
+
 type Invoice struct {
 	ID           string
 	CustomerName string
@@ -46,6 +53,11 @@ func (inv *Invoice) Equal(other Invoice) bool {
 		inv.Status == other.Status &&
 		inv.CreatedAt.Equal(other.CreatedAt) &&
 		inv.UpdatedAt.Equal(other.UpdatedAt)
+}
+
+// FormatStatus returns invoice status name.
+func (inv *Invoice) FormatStatus() string {
+	return statuses[inv.Status]
 }
 
 func (inv *Invoice) IsClosed() bool {

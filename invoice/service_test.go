@@ -99,7 +99,29 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 		}
 	})
 
-	t.Run("fails when invoice is in the status other than open", func(t *testing.T) {})
+	t.Run("fails when invoice is in the status other than open", func(t *testing.T) {
+		statuses := []invoice.Status{invoice.Issued, invoice.Paid, invoice.Canceled}
+		invoices := make([]invoice.Invoice, 0, len(statuses))
+		for _, status := range statuses {
+			inv, err := invoiceAPI.CreateInvoice(invapi.WithStatus(status))
+			if err != nil {
+				t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
+			}
+			invoices = append(invoices, inv)
+		}
+
+		for _, inv := range invoices {
+			customer := "John Doe"
+			err := srv.UpdateInvoiceCustomer(inv.ID, customer)
+			if err == nil {
+				t.Fatalf("expected UpdateInvoiceCustomer(%q, %q) to fail when invoice status is %q",
+					inv.ID, customer, inv.FormatStatus())
+			}
+			if got, want := err.Error(), fmt.Sprintf("%q invoice cannot be updated", inv.FormatStatus()); got != want {
+				t.Errorf("UpdateInvoiceCustomer(%q, %q) failed with: %s, want %s", inv.ID, customer, got, want)
+			}
+		}
+	})
 
 	t.Run("fails when data storage error occurred", func(t *testing.T) {
 		// search failed
