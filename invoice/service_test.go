@@ -39,9 +39,9 @@ func TestCreateInvoice(t *testing.T) {
 		}
 
 		if !inv.CreatedAt.Equal(inv.UpdatedAt) {
-			t.Errorf("invoice.CreatedAt = %s is not equalt to invoice.UpdatedAt = %s",
-				inv.CreatedAt.Format(time.RFC3339),
-				inv.UpdatedAt.Format(time.RFC3339))
+			t.Errorf("invoice.CreatedAt = %s is not equal to invoice.UpdatedAt = %s",
+				inv.CreatedAt.Format(time.RFC3339Nano),
+				inv.UpdatedAt.Format(time.RFC3339Nano))
 		}
 	})
 
@@ -65,17 +65,17 @@ func TestViewInvoice(t *testing.T) {
 	})
 
 	t.Run("returns invoice", func(t *testing.T) {
-		invID, err := invoiceAPI.CreateInvoice()
+		inv, err := invoiceAPI.CreateInvoice()
 		if err != nil {
 			t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
 		}
 
-		vinv, err := srv.ViewInvoice(invID)
+		vinv, err := srv.ViewInvoice(inv.ID)
 		if err != nil {
-			t.Fatalf("ViewInvoice(%q) failed: %v", invID, err)
+			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
 		}
-		if vinv.ID != invID {
-			t.Errorf("invalid invoice.ID %s, want %s", vinv.ID, invID)
+		if !vinv.Equal(inv) {
+			t.Errorf("invalid invoice %v, want %v", vinv, inv)
 		}
 	})
 
@@ -108,27 +108,29 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 
 	t.Run("successfully updates customer name of open invoice", func(t *testing.T) {
 		// place open invoice
-		invID, err := invoiceAPI.CreateInvoice(
-			invapi.WithCustomerName("John Doe"),
-			invapi.WithStatus(invoice.Open),
-		)
+		inv, err := invoiceAPI.CreateInvoice()
 		if err != nil {
 			t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
 		}
 
 		// update customer name
-		customer := "John Wick"
-		if err := srv.UpdateInvoiceCustomer(invID, customer); err != nil {
+		// adding timestamp to name to avoid potential overlap with default name
+		customer := fmt.Sprintf("%s%d", "James Bond", time.Now().Unix())
+		if err := srv.UpdateInvoiceCustomer(inv.ID, customer); err != nil {
 			t.Fatalf("UpdateCustomer(%q) failed: %v", customer, err)
 		}
 
 		// validate that customer name updated
-		inv, err := srv.ViewInvoice(invID)
+		vinv, err := srv.ViewInvoice(inv.ID)
 		if err != nil {
-			t.Fatalf("ViewInvoice(%q) failed: %v", invID, err)
+			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
 		}
-		if inv.CustomerName != customer {
-			t.Errorf("invalid invoice.CustomerName %q, want %q", inv.CustomerName, customer)
+		if vinv.CustomerName != customer {
+			t.Errorf("invalid invoice.CustomerName %q, want %q", vinv.CustomerName, customer)
+		}
+		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
+			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
+				vinv.UpdatedAt.Format(time.RFC3339Nano), inv.UpdatedAt.Format(time.RFC3339Nano))
 		}
 	})
 }

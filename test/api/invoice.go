@@ -16,7 +16,25 @@ func NewIvoiceAPI(strg invoice.Storage) *Invoice {
 	return &Invoice{strg: strg}
 }
 
-func (api *Invoice) CreateInvoice(opts ...InvoiceOptions) (string, error) {
+// CreateInvoice generates and stores invoice. It returns created invoice or any
+// error occurred. In error case an empty invoice returned.
+//
+// By default it generates invoice with random ID in uuid format, customer name
+// is "John Doe", empty issue date, open status, created at and updated at dates
+// set to the current time value when the invoice was generated. It is possible
+// to provide predefined values for any invoice field.
+//
+// For example:
+//
+//	// Create default invoice.
+//	invapi.CreateInvoice()
+//
+//	// Create paid invoice for John Wick.
+//	invapi.CreateInvoice(
+//		invapi.WithCustomerName("John Wick"),
+//		invapi.WithStatus(invoice.Paid))
+//
+func (api *Invoice) CreateInvoice(opts ...InvoiceOptions) (invoice.Invoice, error) {
 	inv := defaultInvoice()
 
 	for _, o := range opts {
@@ -24,9 +42,9 @@ func (api *Invoice) CreateInvoice(opts ...InvoiceOptions) (string, error) {
 	}
 
 	if err := api.strg.AddInvoice(inv); err != nil {
-		return "", errors.Wrap(err, "add invoice failed")
+		return invoice.Invoice{}, errors.Wrap(err, "add invoice failed")
 	}
-	return inv.ID, nil
+	return inv, nil
 }
 
 func defaultInvoice() invoice.Invoice {

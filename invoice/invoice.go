@@ -8,7 +8,8 @@ type Status int
 const (
 	Open Status = iota
 	Issued
-	Closed
+	Paid
+	Canceled
 )
 
 type Invoice struct {
@@ -18,6 +19,17 @@ type Invoice struct {
 	Status       Status
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
+}
+
+func NewInvoice(id, customer string) Invoice {
+	now := time.Now()
+	return Invoice{
+		ID:           id,
+		CustomerName: customer,
+		Status:       Open,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}
 }
 
 func (inv *Invoice) Equal(other Invoice) bool {
@@ -36,13 +48,6 @@ func (inv *Invoice) Equal(other Invoice) bool {
 		inv.UpdatedAt.Equal(other.UpdatedAt)
 }
 
-func NewInvoice(id, customer string) Invoice {
-	now := time.Now()
-	return Invoice{
-		ID:           id,
-		CustomerName: customer,
-		Status:       Open,
-		CreatedAt:    now,
-		UpdatedAt:    now,
-	}
+func (inv *Invoice) IsClosed() bool {
+	return inv.Status == Paid || inv.Status == Canceled
 }
