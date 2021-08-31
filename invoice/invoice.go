@@ -51,28 +51,13 @@ func (inv *Invoice) Equal(other *Invoice) bool {
 		invDatesEqual = inv.Date.Equal(*other.Date)
 	}
 
-	itemsEqual := len(inv.Items) == len(other.Items)
-
-	if itemsEqual {
-		sort.Sort(byItemID(inv.Items))
-		sort.Sort(byItemID(other.Items))
-
-		for i, item := range inv.Items {
-			item := item
-			if !other.Items[i].Equal(&item) {
-				itemsEqual = false
-				break
-			}
-		}
-	}
-
 	return inv.ID == other.ID &&
 		inv.CustomerName == other.CustomerName &&
 		invDatesEqual &&
 		inv.Status == other.Status &&
+		inv.itemsEqual(other.Items) &&
 		inv.CreatedAt.Equal(other.CreatedAt) &&
-		inv.UpdatedAt.Equal(other.UpdatedAt) &&
-		itemsEqual
+		inv.UpdatedAt.Equal(other.UpdatedAt)
 }
 
 // FormatStatus returns formatted invoice status.
@@ -123,6 +108,24 @@ func (inv *Invoice) DeleteItem(id string) bool {
 	}
 
 	inv.Items = append(inv.Items[:idx], inv.Items[idx+1:]...)
+	return true
+}
+
+func (inv *Invoice) itemsEqual(otherItems []Item) bool {
+	if len(inv.Items) != len(otherItems) {
+		return false
+	}
+
+	sort.Sort(byItemID(inv.Items))
+	sort.Sort(byItemID(otherItems))
+
+	for i, item := range inv.Items {
+		item := item
+		if !otherItems[i].Equal(&item) {
+			return false
+		}
+	}
+
 	return true
 }
 
