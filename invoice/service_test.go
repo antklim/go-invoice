@@ -444,31 +444,28 @@ func TestIssueInvoice(t *testing.T) {
 	})
 }
 
-func TestPayInvoiceFails(t *testing.T) {
-	t.Run("when no invoice found", func(t *testing.T) {})
-	t.Run("when data storage error occurred", func(t *testing.T) {})
+func TestPayInvoice(t *testing.T) {
+	t.Run("fails when no invoice found", func(t *testing.T) {})
+
+	t.Run("fails when invoice is in the status other than issued", func(t *testing.T) {})
+
+	t.Run("fails when data storage error occurred", func(t *testing.T) {
+		// search failed
+		// update failed
+	})
+
+	t.Run("successfully pays invoice", func(t *testing.T) {})
 }
 
-func TestCancelInvoiceFails(t *testing.T) {
-	t.Run("when no invoice found", func(t *testing.T) {})
-	t.Run("when data storage error occurred", func(t *testing.T) {})
-}
+func TestCancelInvoice(t *testing.T) {
+	t.Run("fails when no invoice found", func(t *testing.T) {})
 
-// Following are the business rules tests
-func TestOpenInvoice(t *testing.T) {
-	t.Run("can be canceled", func(t *testing.T) {})
+	t.Run("fails when invoice is in the paid or canceled status", func(t *testing.T) {})
 
-	t.Run("cannot be paid", func(t *testing.T) {})
-}
+	t.Run("fails when data storage error occurred", func(t *testing.T) {
+		// search failed
+		// update failed
+	})
 
-func TestIssuedInvoice(t *testing.T) {
-	t.Run("can be canceled", func(t *testing.T) {})
-
-	t.Run("can be paid", func(t *testing.T) {})
-}
-
-func TestClosedInvoice(t *testing.T) {
-	t.Run("cannot be canceled", func(t *testing.T) {})
-
-	t.Run("cannot be paid", func(t *testing.T) {})
+	t.Run("successfully cancels invoice", func(t *testing.T) {})
 }
