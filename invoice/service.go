@@ -142,6 +142,21 @@ func (s *Service) CancelInvoice(id string) error {
 	return errors.New("not implemented")
 }
 
+// PayInvoice sets invoice to the paid status. If invoice not found
+// by provided ID or any issue occurred during invoice lookup or update an error
+// returned. Only invoices in "issued" status are allowed to be paid.
 func (s *Service) PayInvoice(id string) error {
-	return errors.New("not implemented")
+	inv, err := s.strg.FindInvoice(id)
+	if err != nil {
+		return errors.Wrapf(err, errFindFailed, id)
+	}
+	if inv == nil {
+		return fmt.Errorf(errNotFound, id)
+	}
+
+	if inv.Status != Issued {
+		return fmt.Errorf("%q invoice cannot be paid", inv.FormatStatus())
+	}
+
+	return nil
 }
