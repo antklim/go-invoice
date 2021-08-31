@@ -55,11 +55,19 @@ func (inv *Invoice) Equal(other Invoice) bool {
 		inv.UpdatedAt.Equal(other.UpdatedAt)
 }
 
-// FormatStatus returns invoice status name.
+// FormatStatus returns formatted invoice status.
 func (inv *Invoice) FormatStatus() string {
 	return statuses[inv.Status]
 }
 
 func (inv *Invoice) IsClosed() bool {
 	return inv.Status == Paid || inv.Status == Canceled
+}
+
+type Item struct {
+	ID          string
+	ProductName string
+	Price       uint // price in cents
+	Qty         uint
+	CreatedAt   time.Time
 }

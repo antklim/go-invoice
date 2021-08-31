@@ -11,9 +11,21 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestCreateInvoice(t *testing.T) {
-	strg, _ := storage.Factory("memory")
+func testSetup() (*invoice.Service, *invapi.Invoice, error) {
+	strg, err := storage.Factory("memory")
+	if err != nil {
+		return nil, nil, err
+	}
 	srv := invoice.New(strg)
+	api := invapi.NewIvoiceAPI(strg)
+	return srv, api, nil
+}
+
+func TestCreateInvoice(t *testing.T) {
+	srv, _, err := testSetup()
+	if err != nil {
+		t.Fatalf("testSetup() failed: %v", err)
+	}
 
 	t.Run("creates valid invoice", func(t *testing.T) {
 		customer := "John Doe"
@@ -49,9 +61,10 @@ func TestCreateInvoice(t *testing.T) {
 }
 
 func TestViewInvoice(t *testing.T) {
-	strg, _ := storage.Factory("memory")
-	srv := invoice.New(strg)
-	invoiceAPI := invapi.NewIvoiceAPI(strg)
+	srv, invoiceAPI, err := testSetup()
+	if err != nil {
+		t.Fatalf("testSetup() failed: %v", err)
+	}
 
 	t.Run("returns nil when no invoice is found in data storage", func(t *testing.T) {
 		invID := uuid.Nil.String()
@@ -83,9 +96,10 @@ func TestViewInvoice(t *testing.T) {
 }
 
 func TestUpdateInvoiceCustomer(t *testing.T) {
-	strg, _ := storage.Factory("memory")
-	srv := invoice.New(strg)
-	invoiceAPI := invapi.NewIvoiceAPI(strg)
+	srv, invoiceAPI, err := testSetup()
+	if err != nil {
+		t.Fatalf("testSetup() failed: %v", err)
+	}
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
@@ -157,12 +171,33 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 	})
 }
 
-func TestAddInvoiceItemFails(t *testing.T) {
-	t.Run("when no invoice found", func(t *testing.T) {})
-	t.Run("when data storage error occurred", func(t *testing.T) {})
+func TestAddInvoiceItem(t *testing.T) {
+	srv, _, err := testSetup()
+	if err != nil {
+		t.Fatalf("testSetup() failed: %v", err)
+	}
+
+	t.Run("fails when no invoice found", func(t *testing.T) {
+		invID := uuid.Nil.String()
+		item := invoice.Item{}
+		err := srv.AddInvoiceItem(invID, item)
+		if err == nil {
+			t.Fatalf("expected AddInvoiceItems(%q, %v) to fail when invoice does not exist", invID, item)
+		}
+		if got, want := err.Error(), fmt.Sprintf("invoice %q not found", invID); got != want {
+			t.Errorf("AddInvoiceItems(%q, %v) failed with: %s, want %s", invID, item, got, want)
+		}
+	})
+
+	t.Run("fails when invoice is in the status other than open", func(t *testing.T) {})
+	t.Run("fails when data storage error occurred", func(t *testing.T) {
+		// search failed
+		// update failed
+	})
+	t.Run("successfully adds invoice item", func(t *testing.T) {})
 }
 
-func TestDeleteInvoiceItemFails(t *testing.T) {
+func TestDeleteInvoiceItem(t *testing.T) {
 	t.Run("when no invoice found", func(t *testing.T) {})
 	t.Run("when data storage error occurred", func(t *testing.T) {})
 }

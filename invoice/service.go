@@ -7,6 +7,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+// TODO: add error interfaces
+
 type Service struct {
 	strg Storage
 }
@@ -47,7 +49,15 @@ func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 	return nil
 }
 
-func (s *Service) AddInvoiceItem() error {
+func (s *Service) AddInvoiceItem(id string, item Item) error {
+	inv, err := s.strg.FindInvoice(id)
+	if err != nil {
+		return errors.Wrapf(err, "find invoice %q failed", id)
+	}
+	if inv == nil {
+		return fmt.Errorf("invoice %q not found", id)
+	}
+
 	return errors.New("not implemented")
 }
 
