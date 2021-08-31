@@ -58,10 +58,23 @@ func (s *Service) AddInvoiceItem(id string, item Item) error {
 		return fmt.Errorf("invoice %q not found", id)
 	}
 
-	return errors.New("not implemented")
+	if inv.Status != Open {
+		return fmt.Errorf("item cannot be added to %q invoice", inv.FormatStatus())
+	}
+
+	inv.Items = append(inv.Items, item)
+	if err := s.strg.UpdateInvoice(*inv); err != nil {
+		return errors.Wrapf(err, "update invoice %q failed", id)
+	}
+
+	return nil
 }
 
 func (s *Service) DeleteInvoiceItem() error {
+	return errors.New("not implemented")
+}
+
+func (s *Service) IssueInvoice(id string) error {
 	return errors.New("not implemented")
 }
 

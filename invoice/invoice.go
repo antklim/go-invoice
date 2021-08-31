@@ -24,6 +24,7 @@ type Invoice struct {
 	CustomerName string
 	Date         *time.Time // issue date
 	Status       Status
+	Items        []Item
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }

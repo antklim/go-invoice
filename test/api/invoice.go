@@ -47,6 +47,24 @@ func (api *Invoice) CreateInvoice(opts ...InvoiceOptions) (invoice.Invoice, erro
 	return inv, nil
 }
 
+func (api *Invoice) CreateInvoicesWithStatuses(statuses ...invoice.Status) ([]invoice.Invoice, error) {
+	invoices := make([]invoice.Invoice, 0, len(statuses))
+	for _, status := range statuses {
+		inv, err := api.CreateInvoice(WithStatus(status))
+		if err != nil {
+			return nil, err
+		}
+		invoices = append(invoices, inv)
+	}
+	return invoices, nil
+}
+
+// ItemFactory generates invoice items with default product name, price and
+// quantity. Every method call generates unique item ID and created at time.
+func (api *Invoice) ItemFactory() invoice.Item {
+	return defaultItem()
+}
+
 func defaultInvoice() invoice.Invoice {
 	id := uuid.NewString()
 	now := time.Now()
@@ -111,4 +129,17 @@ func WithUpdatedAt(date time.Time) InvoiceOptions {
 	return newFuncInvoiceOptions(func(inv *invoice.Invoice) {
 		inv.UpdatedAt = date
 	})
+}
+
+func defaultItem() invoice.Item {
+	id := uuid.NewString()
+	now := time.Now()
+
+	return invoice.Item{
+		ID:          id,
+		ProductName: "Pen",
+		Price:       123,
+		Qty:         2,
+		CreatedAt:   now,
+	}
 }

@@ -46,6 +46,10 @@ func TestCreateInvoice(t *testing.T) {
 			t.Errorf("invalid invoice.CustomerName %q, want %q", inv.CustomerName, customer)
 		}
 
+		if len(inv.Items) != 0 {
+			t.Errorf("invoice.Items should be empty")
+		}
+
 		if inv.Status != invoice.Open {
 			t.Errorf("invalid invoice.Status %d, want %d", inv.Status, invoice.Open)
 		}
@@ -115,13 +119,9 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 
 	t.Run("fails when invoice is in the status other than open", func(t *testing.T) {
 		statuses := []invoice.Status{invoice.Issued, invoice.Paid, invoice.Canceled}
-		invoices := make([]invoice.Invoice, 0, len(statuses))
-		for _, status := range statuses {
-			inv, err := invoiceAPI.CreateInvoice(invapi.WithStatus(status))
-			if err != nil {
-				t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
-			}
-			invoices = append(invoices, inv)
+		invoices, err := invoiceAPI.CreateInvoicesWithStatuses(statuses...)
+		if err != nil {
+			t.Fatalf("invoiceAPI.CreateInvoicesWithStatuses() failed: %v", err)
 		}
 
 		for _, inv := range invoices {
@@ -172,14 +172,14 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 }
 
 func TestAddInvoiceItem(t *testing.T) {
-	srv, _, err := testSetup()
+	srv, invoiceAPI, err := testSetup()
 	if err != nil {
 		t.Fatalf("testSetup() failed: %v", err)
 	}
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
-		item := invoice.Item{}
+		item := invoiceAPI.ItemFactory()
 		err := srv.AddInvoiceItem(invID, item)
 		if err == nil {
 			t.Fatalf("expected AddInvoiceItems(%q, %v) to fail when invoice does not exist", invID, item)
@@ -189,7 +189,26 @@ func TestAddInvoiceItem(t *testing.T) {
 		}
 	})
 
-	t.Run("fails when invoice is in the status other than open", func(t *testing.T) {})
+	t.Run("fails when invoice is in the status other than open", func(t *testing.T) {
+		statuses := []invoice.Status{invoice.Issued, invoice.Paid, invoice.Canceled}
+		invoices, err := invoiceAPI.CreateInvoicesWithStatuses(statuses...)
+		if err != nil {
+			t.Fatalf("invoiceAPI.CreateInvoicesWithStatuses() failed: %v", err)
+		}
+
+		for _, inv := range invoices {
+			item := invoiceAPI.ItemFactory()
+			err := srv.AddInvoiceItem(inv.ID, item)
+			if err == nil {
+				t.Fatalf("expected AddInvoiceItems(%q, %v) to fail when invoice status is %q",
+					inv.ID, item, inv.FormatStatus())
+			}
+			if got, want := err.Error(), fmt.Sprintf("item cannot be added to %q invoice", inv.FormatStatus()); got != want {
+				t.Errorf("AddInvoiceItems(%q, %v) failed with: %s, want %s", inv.ID, item, got, want)
+			}
+		}
+	})
+
 	t.Run("fails when data storage error occurred", func(t *testing.T) {
 		// search failed
 		// update failed
