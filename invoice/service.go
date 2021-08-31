@@ -76,11 +76,10 @@ func (s *Service) AddInvoiceItem(id string, item Item) error {
 		return fmt.Errorf(errNotFound, id)
 	}
 
-	if inv.Status != Open {
-		return fmt.Errorf("item cannot be added to %q invoice", FormatStatus(inv.Status))
+	if err := inv.AddItem(item); err != nil {
+		return err
 	}
 
-	inv.AddItem(item)
 	if err := s.strg.UpdateInvoice(*inv); err != nil {
 		return errors.Wrapf(err, errUpdateFailed, id)
 	}
@@ -100,11 +99,12 @@ func (s *Service) DeleteInvoiceItem(invID, itemID string) error {
 		return fmt.Errorf(errNotFound, invID)
 	}
 
-	if inv.Status != Open {
-		return fmt.Errorf("item cannot be deleted from %q invoice", FormatStatus(inv.Status))
+	ok, err := inv.DeleteItem(itemID)
+	if err != nil {
+		return err
 	}
 
-	if ok := inv.DeleteItem(itemID); ok {
+	if ok {
 		// update storage only when item collection was changed
 		if err := s.strg.UpdateInvoice(*inv); err != nil {
 			return errors.Wrapf(err, errUpdateFailed, invID)
@@ -126,11 +126,10 @@ func (s *Service) IssueInvoice(id string) error {
 		return fmt.Errorf(errNotFound, id)
 	}
 
-	if inv.Status != Open {
-		return fmt.Errorf("%q invoice cannot be issued", FormatStatus(inv.Status))
+	if err := inv.Issue(); err != nil {
+		return err
 	}
 
-	inv.Issue()
 	if err := s.strg.UpdateInvoice(*inv); err != nil {
 		return errors.Wrapf(err, errUpdateFailed, inv.ID)
 	}
@@ -150,11 +149,10 @@ func (s *Service) CancelInvoice(id string) error {
 		return fmt.Errorf(errNotFound, id)
 	}
 
-	if inv.Status == Canceled || inv.Status == Paid {
-		return fmt.Errorf("%q invoice cannot be canceled", FormatStatus(inv.Status))
+	if err := inv.Cancel(); err != nil {
+		return err
 	}
 
-	inv.Cancel()
 	if err := s.strg.UpdateInvoice(*inv); err != nil {
 		return errors.Wrapf(err, errUpdateFailed, inv.ID)
 	}
@@ -174,11 +172,10 @@ func (s *Service) PayInvoice(id string) error {
 		return fmt.Errorf(errNotFound, id)
 	}
 
-	if inv.Status != Issued {
-		return fmt.Errorf("%q invoice cannot be paid", FormatStatus(inv.Status))
+	if err := inv.Pay(); err != nil {
+		return err
 	}
 
-	inv.Pay()
 	if err := s.strg.UpdateInvoice(*inv); err != nil {
 		return errors.Wrapf(err, errUpdateFailed, inv.ID)
 	}

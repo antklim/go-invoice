@@ -1,6 +1,7 @@
 package invoice
 
 import (
+	"fmt"
 	"sort"
 	"time"
 )
@@ -85,42 +86,69 @@ func (inv *Invoice) ContainsItem(id string) bool {
 	return idx != -1
 }
 
-// AddItem adds an item to the invoice.
-func (inv *Invoice) AddItem(item Item) {
+// AddItem adds an item to the invoice. It returns error when invoice item
+// cannot be added.
+func (inv *Invoice) AddItem(item Item) error {
+	if inv.Status != Open {
+		return fmt.Errorf("item cannot be added to %q invoice", FormatStatus(inv.Status))
+	}
+
 	inv.Items = append(inv.Items, item)
+	return nil
 }
 
 // DeleteItem deletes an item by ID. This operation is idempotent, repeatable
 // item delete supported. Returns true when the item was found and deleted from
 // the items collection.
-func (inv *Invoice) DeleteItem(id string) bool {
+func (inv *Invoice) DeleteItem(id string) (bool, error) {
+	if inv.Status != Open {
+		return false, fmt.Errorf("item cannot be deleted from %q invoice", FormatStatus(inv.Status))
+	}
+
 	idx := inv.FindItemIndex(func(item Item) bool {
 		return item.ID == id
 	})
 
 	if idx == -1 {
-		return false
+		return false, nil
 	}
 
 	inv.Items = append(inv.Items[:idx], inv.Items[idx+1:]...)
-	return true
+	return true, nil
 }
 
-// Issue sets invoice to issued state.
-func (inv *Invoice) Issue() {
+// Issue sets invoice to issued state. It returns error when invoice is not
+// issueable.
+func (inv *Invoice) Issue() error {
+	if inv.Status != Open {
+		return fmt.Errorf("%q invoice cannot be issued", FormatStatus(inv.Status))
+	}
+
 	inv.Status = Issued
 	now := time.Now()
 	inv.Date = &now
+	return nil
 }
 
-// Pay sets invoice to paid state.
-func (inv *Invoice) Pay() {
+// Pay sets invoice to paid state. It returns error when invoice is not payable.
+func (inv *Invoice) Pay() error {
+	if inv.Status != Issued {
+		return fmt.Errorf("%q invoice cannot be paid", FormatStatus(inv.Status))
+	}
+
 	inv.Status = Paid
+	return nil
 }
 
-// Pay sets invoice to canceled state.
-func (inv *Invoice) Cancel() {
+// Cancel sets invoice to canceled state. It returns error when invoice is not
+// cancelable.
+func (inv *Invoice) Cancel() error {
+	if inv.Status == Canceled || inv.Status == Paid {
+		return fmt.Errorf("%q invoice cannot be canceled", FormatStatus(inv.Status))
+	}
+
 	inv.Status = Canceled
+	return nil
 }
 
 func (inv *Invoice) itemsEqual(otherItems []Item) bool {
