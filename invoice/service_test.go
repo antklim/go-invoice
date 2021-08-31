@@ -153,7 +153,7 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 		// adding timestamp to name to avoid potential overlap with default name
 		customer := fmt.Sprintf("%s%d", "James Bond", time.Now().Unix())
 		if err := srv.UpdateInvoiceCustomer(inv.ID, customer); err != nil {
-			t.Fatalf("UpdateCustomer(%q) failed: %v", customer, err)
+			t.Fatalf("UpdateCustomer(%q, %q) failed: %v", inv.ID, customer, err)
 		}
 
 		// validate that customer name updated
@@ -213,7 +213,35 @@ func TestAddInvoiceItem(t *testing.T) {
 		// search failed
 		// update failed
 	})
-	t.Run("successfully adds invoice item", func(t *testing.T) {})
+
+	t.Run("successfully adds invoice item", func(t *testing.T) {
+		// place open invoice
+		inv, err := invoiceAPI.CreateInvoice()
+		if err != nil {
+			t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
+		}
+
+		items := len(inv.Items)
+
+		// add item
+		item := invoiceAPI.ItemFactory()
+		if err := srv.AddInvoiceItem(inv.ID, item); err != nil {
+			t.Fatalf("AddInvoiceItems(%q, %v) failed: %v", inv.ID, item, err)
+		}
+
+		// validate that item added
+		vinv, err := srv.ViewInvoice(inv.ID)
+		if err != nil {
+			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
+		}
+		if len(vinv.Items) != items+1 {
+			t.Errorf("invalid invoice.Items number %d, want %d", len(vinv.Items), items+1)
+		}
+		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
+			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
+				vinv.UpdatedAt.Format(time.RFC3339Nano), inv.UpdatedAt.Format(time.RFC3339Nano))
+		}
+	})
 }
 
 func TestDeleteInvoiceItem(t *testing.T) {

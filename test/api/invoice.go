@@ -47,6 +47,8 @@ func (api *Invoice) CreateInvoice(opts ...InvoiceOptions) (invoice.Invoice, erro
 	return inv, nil
 }
 
+// CreateInvoicesWithStatuses generates and stores a collection of invoices.
+// Every invoice generated according to provided status.
 func (api *Invoice) CreateInvoicesWithStatuses(statuses ...invoice.Status) ([]invoice.Invoice, error) {
 	invoices := make([]invoice.Invoice, 0, len(statuses))
 	for _, status := range statuses {
