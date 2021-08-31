@@ -111,6 +111,13 @@ func (inv *Invoice) DeleteItem(id string) bool {
 	return true
 }
 
+// Issue sets invoice to issued state.
+func (inv *Invoice) Issue() {
+	inv.Status = Issued
+	now := time.Now()
+	inv.Date = &now
+}
+
 func (inv *Invoice) itemsEqual(otherItems []Item) bool {
 	if len(inv.Items) != len(otherItems) {
 		return false

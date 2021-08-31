@@ -412,7 +412,35 @@ func TestIssueInvoice(t *testing.T) {
 	})
 
 	t.Run("successfully issues invoice", func(t *testing.T) {
-		// validate status change and issue date set
+		// place open invoice
+		inv, err := invoiceAPI.CreateInvoice()
+		if err != nil {
+			t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
+		}
+
+		// issue invoice
+		if err := srv.IssueInvoice(inv.ID); err != nil {
+			t.Fatalf("IssueInvoice(%q) failed: %v", inv.ID, err)
+		}
+
+		// validate that invoice was respectively updated
+		vinv, err := srv.ViewInvoice(inv.ID)
+		if err != nil {
+			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
+		}
+		if vinv.Status != invoice.Issued {
+			t.Errorf("invalid invoice.Status %d, want %d", vinv.Status, invoice.Issued)
+		}
+		if vinv.Date == nil {
+			t.Error("invoice issue date should be set")
+		}
+		if time.Since(*vinv.Date).Milliseconds() > 100 {
+			t.Error("invoice issue date should be within the last 100 msec")
+		}
+		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
+			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
+				vinv.UpdatedAt.Format(time.RFC3339Nano), inv.UpdatedAt.Format(time.RFC3339Nano))
+		}
 	})
 }
 
@@ -428,26 +456,18 @@ func TestCancelInvoiceFails(t *testing.T) {
 
 // Following are the business rules tests
 func TestOpenInvoice(t *testing.T) {
-	t.Run("can be issued", func(t *testing.T) {
-		// verify issue date is set
-	})
-
 	t.Run("can be canceled", func(t *testing.T) {})
 
 	t.Run("cannot be paid", func(t *testing.T) {})
 }
 
 func TestIssuedInvoice(t *testing.T) {
-	t.Run("cannot be issued", func(t *testing.T) {})
-
 	t.Run("can be canceled", func(t *testing.T) {})
 
 	t.Run("can be paid", func(t *testing.T) {})
 }
 
 func TestClosedInvoice(t *testing.T) {
-	t.Run("cannot be issued", func(t *testing.T) {})
-
 	t.Run("cannot be canceled", func(t *testing.T) {})
 
 	t.Run("cannot be paid", func(t *testing.T) {})

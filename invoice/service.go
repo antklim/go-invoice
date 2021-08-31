@@ -127,6 +127,11 @@ func (s *Service) IssueInvoice(id string) error {
 		return fmt.Errorf("%q invoice cannot be issued", inv.FormatStatus())
 	}
 
+	inv.Issue()
+	if err := s.strg.UpdateInvoice(*inv); err != nil {
+		return errors.Wrapf(err, errUpdateFailed, inv.ID)
+	}
+
 	return nil
 }
 
