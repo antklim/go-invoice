@@ -99,6 +99,11 @@ func (s *Service) DeleteInvoiceItem(invID, itemID string) error {
 	if inv == nil {
 		return fmt.Errorf(errNotFound, invID)
 	}
+
+	if inv.Status != Open {
+		return fmt.Errorf("item cannot be deleted from %q invoice", inv.FormatStatus())
+	}
+
 	return nil
 }
 

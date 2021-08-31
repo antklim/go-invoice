@@ -278,7 +278,26 @@ func TestDeleteInvoiceItem(t *testing.T) {
 		}
 	})
 
-	t.Run("fails when invoice is in the status other than open", func(t *testing.T) {})
+	t.Run("fails when invoice is in the status other than open", func(t *testing.T) {
+		statuses := []invoice.Status{invoice.Issued, invoice.Paid, invoice.Canceled}
+		invoices, err := invoiceAPI.CreateInvoicesWithStatuses(statuses...)
+		if err != nil {
+			t.Fatalf("invoiceAPI.CreateInvoicesWithStatuses() failed: %v", err)
+		}
+
+		itemID := uuid.Nil.String()
+		for _, inv := range invoices {
+			err := srv.DeleteInvoiceItem(inv.ID, itemID)
+			if err == nil {
+				t.Fatalf("expected DeleteInvoiceItem(%q, %q) to fail when invoice status is %q",
+					inv.ID, itemID, inv.FormatStatus())
+			}
+			if got, want := err.Error(), fmt.Sprintf("item cannot be deleted from %q invoice", inv.FormatStatus()); got != want {
+				t.Errorf("DeleteInvoiceItem(%q, %q) failed with: %s, want %s", inv.ID, itemID, got, want)
+			}
+		}
+	})
+
 	t.Run("fails when data storage error occurred", func(t *testing.T) {
 		// search failed
 		// update failed
