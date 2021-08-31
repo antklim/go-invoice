@@ -145,9 +145,11 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 			err := srv.UpdateInvoiceCustomer(inv.ID, customer)
 			if err == nil {
 				t.Fatalf("expected UpdateInvoiceCustomer(%q, %q) to fail when invoice status is %q",
-					inv.ID, customer, inv.FormatStatus())
+					inv.ID, customer, invoice.FormatStatus(inv.Status))
 			}
-			if got, want := err.Error(), fmt.Sprintf("%q invoice cannot be updated", inv.FormatStatus()); got != want {
+			got := err.Error()
+			want := fmt.Sprintf("%q invoice cannot be updated", invoice.FormatStatus(inv.Status))
+			if got != want {
 				t.Errorf("UpdateInvoiceCustomer(%q, %q) failed with: %s, want %s", inv.ID, customer, got, want)
 			}
 		}
@@ -217,9 +219,11 @@ func TestAddInvoiceItem(t *testing.T) {
 			err := srv.AddInvoiceItem(inv.ID, item)
 			if err == nil {
 				t.Fatalf("expected AddInvoiceItems(%q, %v) to fail when invoice status is %q",
-					inv.ID, item, inv.FormatStatus())
+					inv.ID, item, invoice.FormatStatus(inv.Status))
 			}
-			if got, want := err.Error(), fmt.Sprintf("item cannot be added to %q invoice", inv.FormatStatus()); got != want {
+			got := err.Error()
+			want := fmt.Sprintf("item cannot be added to %q invoice", invoice.FormatStatus(inv.Status))
+			if got != want {
 				t.Errorf("AddInvoiceItems(%q, %v) failed with: %s, want %s", inv.ID, item, got, want)
 			}
 		}
@@ -290,10 +294,10 @@ func TestDeleteInvoiceItem(t *testing.T) {
 			err := srv.DeleteInvoiceItem(inv.ID, itemID)
 			if err == nil {
 				t.Fatalf("expected DeleteInvoiceItem(%q, %q) to fail when invoice status is %q",
-					inv.ID, itemID, inv.FormatStatus())
+					inv.ID, itemID, invoice.FormatStatus(inv.Status))
 			}
 			got := err.Error()
-			want := fmt.Sprintf("item cannot be deleted from %q invoice", inv.FormatStatus())
+			want := fmt.Sprintf("item cannot be deleted from %q invoice", invoice.FormatStatus(inv.Status))
 			if got != want {
 				t.Errorf("DeleteInvoiceItem(%q, %q) failed with: %s, want %s", inv.ID, itemID, got, want)
 			}
@@ -398,9 +402,12 @@ func TestIssueInvoice(t *testing.T) {
 		for _, inv := range invoices {
 			err := srv.IssueInvoice(inv.ID)
 			if err == nil {
-				t.Fatalf("expected IssueInvoice(%q) to fail when invoice status is %q", inv.ID, inv.FormatStatus())
+				t.Fatalf("expected IssueInvoice(%q) to fail when invoice status is %q",
+					inv.ID, invoice.FormatStatus(inv.Status))
 			}
-			if got, want := err.Error(), fmt.Sprintf("%q invoice cannot be issued", inv.FormatStatus()); got != want {
+			got := err.Error()
+			want := fmt.Sprintf("%q invoice cannot be issued", invoice.FormatStatus(inv.Status))
+			if got != want {
 				t.Errorf("IssueInvoice(%q) failed with: %s, want %s", inv.ID, got, want)
 			}
 		}
@@ -423,7 +430,7 @@ func TestIssueInvoice(t *testing.T) {
 			t.Fatalf("IssueInvoice(%q) failed: %v", inv.ID, err)
 		}
 
-		// validate that invoice was respectively updated
+		// validate that invoice fields were respectively updated
 		vinv, err := srv.ViewInvoice(inv.ID)
 		if err != nil {
 			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
@@ -471,9 +478,12 @@ func TestPayInvoice(t *testing.T) {
 		for _, inv := range invoices {
 			err := srv.PayInvoice(inv.ID)
 			if err == nil {
-				t.Fatalf("expected PayInvoice(%q) to fail when invoice status is %q", inv.ID, inv.FormatStatus())
+				t.Fatalf("expected PayInvoice(%q) to fail when invoice status is %q",
+					inv.ID, invoice.FormatStatus(inv.Status))
 			}
-			if got, want := err.Error(), fmt.Sprintf("%q invoice cannot be paid", inv.FormatStatus()); got != want {
+			got := err.Error()
+			want := fmt.Sprintf("%q invoice cannot be paid", invoice.FormatStatus(inv.Status))
+			if got != want {
 				t.Errorf("PayInvoice(%q) failed with: %s, want %s", inv.ID, got, want)
 			}
 		}
@@ -484,7 +494,32 @@ func TestPayInvoice(t *testing.T) {
 		// update failed
 	})
 
-	t.Run("successfully pays invoice", func(t *testing.T) {})
+	t.Run("successfully pays invoice", func(t *testing.T) {
+		// place issued invoice
+		inv, err := invoiceAPI.CreateInvoice(invapi.WithStatus(invoice.Issued))
+		if err != nil {
+			t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
+		}
+
+		// pay invoice
+		if err := srv.PayInvoice(inv.ID); err != nil {
+			t.Fatalf("PayInvoice(%q) failed: %v", inv.ID, err)
+		}
+
+		// validate that invoice fields were respectively updated
+		vinv, err := srv.ViewInvoice(inv.ID)
+		if err != nil {
+			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
+		}
+		if vinv.Status != invoice.Paid {
+			t.Errorf("invalid invoice.Status %q, want %q",
+				invoice.FormatStatus(vinv.Status), invoice.FormatStatus(invoice.Paid))
+		}
+		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
+			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
+				vinv.UpdatedAt.Format(time.RFC3339Nano), inv.UpdatedAt.Format(time.RFC3339Nano))
+		}
+	})
 }
 
 func TestCancelInvoice(t *testing.T) {

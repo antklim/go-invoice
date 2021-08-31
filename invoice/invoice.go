@@ -22,6 +22,11 @@ var statuses = [...]string{
 	Canceled: "canceled",
 }
 
+// FormatStatus returns formatted status.
+func FormatStatus(st Status) string {
+	return statuses[st]
+}
+
 type Invoice struct {
 	ID           string
 	CustomerName string
@@ -58,11 +63,6 @@ func (inv *Invoice) Equal(other *Invoice) bool {
 		inv.itemsEqual(other.Items) &&
 		inv.CreatedAt.Equal(other.CreatedAt) &&
 		inv.UpdatedAt.Equal(other.UpdatedAt)
-}
-
-// FormatStatus returns formatted invoice status.
-func (inv *Invoice) FormatStatus() string {
-	return statuses[inv.Status]
 }
 
 // FindItemIndex returns the index of the first item in the collection that
@@ -111,6 +111,11 @@ func (inv *Invoice) Issue() {
 	inv.Status = Issued
 	now := time.Now()
 	inv.Date = &now
+}
+
+// Pay sets invoice to paid state.
+func (inv *Invoice) Pay() {
+	inv.Status = Paid
 }
 
 func (inv *Invoice) itemsEqual(otherItems []Item) bool {

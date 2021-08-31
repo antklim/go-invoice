@@ -53,7 +53,7 @@ func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 	}
 
 	if inv.Status != Open {
-		return fmt.Errorf("%q invoice cannot be updated", inv.FormatStatus())
+		return fmt.Errorf("%q invoice cannot be updated", FormatStatus(inv.Status))
 	}
 
 	inv.CustomerName = name
@@ -77,7 +77,7 @@ func (s *Service) AddInvoiceItem(id string, item Item) error {
 	}
 
 	if inv.Status != Open {
-		return fmt.Errorf("item cannot be added to %q invoice", inv.FormatStatus())
+		return fmt.Errorf("item cannot be added to %q invoice", FormatStatus(inv.Status))
 	}
 
 	inv.AddItem(item)
@@ -101,7 +101,7 @@ func (s *Service) DeleteInvoiceItem(invID, itemID string) error {
 	}
 
 	if inv.Status != Open {
-		return fmt.Errorf("item cannot be deleted from %q invoice", inv.FormatStatus())
+		return fmt.Errorf("item cannot be deleted from %q invoice", FormatStatus(inv.Status))
 	}
 
 	if ok := inv.DeleteItem(itemID); ok {
@@ -127,7 +127,7 @@ func (s *Service) IssueInvoice(id string) error {
 	}
 
 	if inv.Status != Open {
-		return fmt.Errorf("%q invoice cannot be issued", inv.FormatStatus())
+		return fmt.Errorf("%q invoice cannot be issued", FormatStatus(inv.Status))
 	}
 
 	inv.Issue()
@@ -155,7 +155,12 @@ func (s *Service) PayInvoice(id string) error {
 	}
 
 	if inv.Status != Issued {
-		return fmt.Errorf("%q invoice cannot be paid", inv.FormatStatus())
+		return fmt.Errorf("%q invoice cannot be paid", FormatStatus(inv.Status))
+	}
+
+	inv.Pay()
+	if err := s.strg.UpdateInvoice(*inv); err != nil {
+		return errors.Wrapf(err, errUpdateFailed, inv.ID)
 	}
 
 	return nil
