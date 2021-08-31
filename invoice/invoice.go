@@ -65,11 +65,6 @@ func (inv *Invoice) FormatStatus() string {
 	return statuses[inv.Status]
 }
 
-// IsClosed returns true when invoice has a status that is considered as closed.
-func (inv *Invoice) IsClosed() bool {
-	return inv.Status == Paid || inv.Status == Canceled
-}
-
 // FindItemIndex returns the index of the first item in the collection that
 // satisfies the provided testing function. Testing function should returns true
 // to indicate that the satisfying item was found.
