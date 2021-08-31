@@ -80,7 +80,7 @@ func (s *Service) AddInvoiceItem(id string, item Item) error {
 		return fmt.Errorf("item cannot be added to %q invoice", inv.FormatStatus())
 	}
 
-	inv.Items = append(inv.Items, item)
+	inv.AddItem(item)
 	if err := s.strg.UpdateInvoice(*inv); err != nil {
 		return errors.Wrapf(err, errUpdateFailed, id)
 	}
@@ -104,15 +104,7 @@ func (s *Service) DeleteInvoiceItem(invID, itemID string) error {
 		return fmt.Errorf("item cannot be deleted from %q invoice", inv.FormatStatus())
 	}
 
-	idx := inv.FindItemIndex(func(item Item) bool {
-		return item.ID == itemID
-	})
-
-	if idx == -1 {
-		return nil
-	}
-
-	inv.Items = append(inv.Items[:idx], inv.Items[idx+1:]...)
+	inv.DeleteItem(itemID)
 	if err := s.strg.UpdateInvoice(*inv); err != nil {
 		return errors.Wrapf(err, errUpdateFailed, invID)
 	}

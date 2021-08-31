@@ -61,6 +61,7 @@ func (inv *Invoice) FormatStatus() string {
 	return statuses[inv.Status]
 }
 
+// IsClosed returns true when invoice has a status that is considered as closed.
 func (inv *Invoice) IsClosed() bool {
 	return inv.Status == Paid || inv.Status == Canceled
 }
@@ -83,6 +84,25 @@ func (inv *Invoice) ContainsItem(id string) bool {
 		return item.ID == id
 	})
 	return idx != -1
+}
+
+// AddItem adds an item to the invoice.
+func (inv *Invoice) AddItem(item Item) {
+	inv.Items = append(inv.Items, item)
+}
+
+// DeleteItem deletes an item by ID. This operation is idempotent, repeatable
+// item delete supported.
+func (inv *Invoice) DeleteItem(id string) {
+	idx := inv.FindItemIndex(func(item Item) bool {
+		return item.ID == id
+	})
+
+	if idx == -1 {
+		return
+	}
+
+	inv.Items = append(inv.Items[:idx], inv.Items[idx+1:]...)
 }
 
 type Item struct {
