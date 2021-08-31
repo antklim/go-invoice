@@ -52,11 +52,10 @@ func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 		return fmt.Errorf(errNotFound, id)
 	}
 
-	if inv.Status != Open {
-		return fmt.Errorf("%q invoice cannot be updated", FormatStatus(inv.Status))
+	if err := inv.UpdateCustomerName(name); err != nil {
+		return err
 	}
 
-	inv.CustomerName = name
 	if err := s.strg.UpdateInvoice(*inv); err != nil {
 		return errors.Wrapf(err, errUpdateFailed, id)
 	}

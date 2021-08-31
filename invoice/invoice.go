@@ -66,6 +66,17 @@ func (inv *Invoice) Equal(other *Invoice) bool {
 		inv.UpdatedAt.Equal(other.UpdatedAt)
 }
 
+// UpdateCustomerName sets new customer name. It returns error when invoice
+// cannot be updated.
+func (inv *Invoice) UpdateCustomerName(name string) error {
+	if inv.Status != Open {
+		return fmt.Errorf("%q invoice cannot be updated", FormatStatus(inv.Status))
+	}
+
+	inv.CustomerName = name
+	return nil
+}
+
 // FindItemIndex returns the index of the first item in the collection that
 // satisfies the provided testing function. Testing function should returns true
 // to indicate that the satisfying item was found.
