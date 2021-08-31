@@ -140,8 +140,8 @@ func defaultItem() invoice.Item {
 	return invoice.Item{
 		ID:          id,
 		ProductName: "Pen",
-		Price:       123,
-		Qty:         2,
+		Price:       123, // nolint:gomnd
+		Qty:         2,   // nolint:gomnd
 		CreatedAt:   now,
 	}
 }
