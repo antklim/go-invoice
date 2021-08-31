@@ -261,13 +261,30 @@ func TestAddInvoiceItem(t *testing.T) {
 }
 
 func TestDeleteInvoiceItem(t *testing.T) {
-	t.Run("fails when no invoice found", func(t *testing.T) {})
+	srv, invoiceAPI, err := testSetup()
+	if err != nil {
+		t.Fatalf("testSetup() failed: %v", err)
+	}
+
+	t.Run("fails when no invoice found", func(t *testing.T) {
+		invID := uuid.Nil.String()
+		item := invoiceAPI.ItemFactory()
+		err := srv.DeleteInvoiceItem(invID, item.ID)
+		if err == nil {
+			t.Fatalf("expected DeleteInvoiceItem(%q, %q) to fail when invoice does not exist", invID, item.ID)
+		}
+		if got, want := err.Error(), fmt.Sprintf("invoice %q not found", invID); got != want {
+			t.Errorf("DeleteInvoiceItem(%q, %q) failed with: %s, want %s", invID, item.ID, got, want)
+		}
+	})
+
 	t.Run("fails when invoice is in the status other than open", func(t *testing.T) {})
 	t.Run("fails when data storage error occurred", func(t *testing.T) {
 		// search failed
 		// update failed
 	})
 	t.Run("successfully deletes invoice item", func(t *testing.T) {})
+	t.Run("idempotent to repeatable delete", func(t *testing.T) {})
 }
 
 func TestPayInvoiceFails(t *testing.T) {
@@ -282,13 +299,6 @@ func TestCancelInvoiceFails(t *testing.T) {
 
 // Following are the business rules tests
 func TestOpenInvoice(t *testing.T) {
-	t.Run("can be updated", func(t *testing.T) {
-		t.Run("items can be deleted", func(t *testing.T) {
-			// when deleting non existent item it does not return error
-			// error returned only in case of data access layer
-		})
-	})
-
 	t.Run("can be issued", func(t *testing.T) {
 		// verify issue date is set
 	})
@@ -299,10 +309,6 @@ func TestOpenInvoice(t *testing.T) {
 }
 
 func TestIssuedInvoice(t *testing.T) {
-	t.Run("cannot be updated", func(t *testing.T) {
-		t.Run("items cannot be deleted", func(t *testing.T) {})
-	})
-
 	t.Run("cannot be issued", func(t *testing.T) {})
 
 	t.Run("can be canceled", func(t *testing.T) {})
@@ -311,10 +317,6 @@ func TestIssuedInvoice(t *testing.T) {
 }
 
 func TestClosedInvoice(t *testing.T) {
-	t.Run("cannot be updated", func(t *testing.T) {
-		t.Run("items cannot be deleted", func(t *testing.T) {})
-	})
-
 	t.Run("cannot be issued", func(t *testing.T) {})
 
 	t.Run("cannot be canceled", func(t *testing.T) {})

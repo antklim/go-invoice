@@ -19,10 +19,13 @@ type Service struct {
 	strg Storage
 }
 
+// New initiates a new instance of the service.
 func New(strg Storage) *Service {
 	return &Service{strg: strg}
 }
 
+// CreateInvoice generates and stores an invoice. A new invoice generated with
+// the provided customer name. Invoice and any occurred error returned.
 func (s *Service) CreateInvoice(customerName string) (Invoice, error) {
 	invID := uuid.NewString()
 	inv := NewInvoice(invID, customerName)
@@ -30,10 +33,16 @@ func (s *Service) CreateInvoice(customerName string) (Invoice, error) {
 	return inv, err
 }
 
+// ViewInvoice finds an invoice by invoice ID. It returns non nil pointer to the
+// found invoice or nil in case when no invoices selected by ID. Nil invoice
+// pointer also returned in error case.
 func (s *Service) ViewInvoice(id string) (*Invoice, error) {
 	return s.strg.FindInvoice(id)
 }
 
+// UpdateInvoiceCustomer updates invoice's customer name. If invoice not found
+// by provided ID or any issue occurred during invoice lookup or update an error
+// returned. Only invoices in "open" status are allowed to be updated.
 func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 	inv, err := s.strg.FindInvoice(id)
 	if err != nil {
@@ -55,6 +64,9 @@ func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 	return nil
 }
 
+// AddInvoiceItem adds invoice item to the invoice. If invoice not found
+// by provided ID or any issue occurred during invoice lookup or update an error
+// returned. Only invoices in "open" status are allowed to be updated.
 func (s *Service) AddInvoiceItem(id string, item Item) error {
 	inv, err := s.strg.FindInvoice(id)
 	if err != nil {
@@ -76,8 +88,18 @@ func (s *Service) AddInvoiceItem(id string, item Item) error {
 	return nil
 }
 
-func (s *Service) DeleteInvoiceItem() error {
-	return errors.New("not implemented")
+// DeleteInvoiceItem deletes invoice item to the invoice. If invoice not found
+// by provided ID or any issue occurred during invoice lookup or update an error
+// returned. Only invoices in "open" status are allowed to be updated.
+func (s *Service) DeleteInvoiceItem(invID, itemID string) error {
+	inv, err := s.strg.FindInvoice(invID)
+	if err != nil {
+		return errors.Wrapf(err, errFindFailed, invID)
+	}
+	if inv == nil {
+		return fmt.Errorf(errNotFound, invID)
+	}
+	return nil
 }
 
 func (s *Service) IssueInvoice(id string) error {
