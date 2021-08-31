@@ -118,6 +118,11 @@ func (inv *Invoice) Pay() {
 	inv.Status = Paid
 }
 
+// Pay sets invoice to canceled state.
+func (inv *Invoice) Cancel() {
+	inv.Status = Canceled
+}
+
 func (inv *Invoice) itemsEqual(otherItems []Item) bool {
 	if len(inv.Items) != len(otherItems) {
 		return false

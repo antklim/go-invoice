@@ -138,8 +138,28 @@ func (s *Service) IssueInvoice(id string) error {
 	return nil
 }
 
+// CancelInvoice sets invoice to the canceled status. If invoice not found
+// by provided ID or any issue occurred during invoice lookup or update an error
+// returned. Canceled or paid invoices cannot be canceled.
 func (s *Service) CancelInvoice(id string) error {
-	return errors.New("not implemented")
+	inv, err := s.strg.FindInvoice(id)
+	if err != nil {
+		return errors.Wrapf(err, errFindFailed, id)
+	}
+	if inv == nil {
+		return fmt.Errorf(errNotFound, id)
+	}
+
+	if inv.Status == Canceled || inv.Status == Paid {
+		return fmt.Errorf("%q invoice cannot be canceled", FormatStatus(inv.Status))
+	}
+
+	inv.Cancel()
+	if err := s.strg.UpdateInvoice(*inv); err != nil {
+		return errors.Wrapf(err, errUpdateFailed, inv.ID)
+	}
+
+	return nil
 }
 
 // PayInvoice sets invoice to the paid status. If invoice not found
