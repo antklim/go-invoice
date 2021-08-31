@@ -115,7 +115,19 @@ func (s *Service) DeleteInvoiceItem(invID, itemID string) error {
 }
 
 func (s *Service) IssueInvoice(id string) error {
-	return errors.New("not implemented")
+	inv, err := s.strg.FindInvoice(id)
+	if err != nil {
+		return errors.Wrapf(err, errFindFailed, id)
+	}
+	if inv == nil {
+		return fmt.Errorf(errNotFound, id)
+	}
+
+	if inv.Status != Open {
+		return fmt.Errorf("%q invoice cannot be issued", inv.FormatStatus())
+	}
+
+	return nil
 }
 
 func (s *Service) CancelInvoice(id string) error {

@@ -371,6 +371,51 @@ func TestDeleteInvoiceItem(t *testing.T) {
 	})
 }
 
+func TestIssueInvoice(t *testing.T) {
+	srv, invoiceAPI, err := testSetup()
+	if err != nil {
+		t.Fatalf("testSetup() failed: %v", err)
+	}
+
+	t.Run("fails when no invoice found", func(t *testing.T) {
+		invID := uuid.Nil.String()
+		err := srv.IssueInvoice(invID)
+		if err == nil {
+			t.Fatalf("expected IssueInvoice(%q) to fail when invoice does not exist", invID)
+		}
+		if got, want := err.Error(), fmt.Sprintf("invoice %q not found", invID); got != want {
+			t.Errorf("IssueInvoice(%q) failed with: %s, want %s", invID, got, want)
+		}
+	})
+
+	t.Run("fails when invoice is in the status other than open", func(t *testing.T) {
+		statuses := []invoice.Status{invoice.Issued, invoice.Paid, invoice.Canceled}
+		invoices, err := invoiceAPI.CreateInvoicesWithStatuses(statuses...)
+		if err != nil {
+			t.Fatalf("invoiceAPI.CreateInvoicesWithStatuses() failed: %v", err)
+		}
+
+		for _, inv := range invoices {
+			err := srv.IssueInvoice(inv.ID)
+			if err == nil {
+				t.Fatalf("expected IssueInvoice(%q) to fail when invoice status is %q", inv.ID, inv.FormatStatus())
+			}
+			if got, want := err.Error(), fmt.Sprintf("%q invoice cannot be issued", inv.FormatStatus()); got != want {
+				t.Errorf("IssueInvoice(%q) failed with: %s, want %s", inv.ID, got, want)
+			}
+		}
+	})
+
+	t.Run("fails when data storage error occurred", func(t *testing.T) {
+		// search failed
+		// update failed
+	})
+
+	t.Run("successfully issues invoice", func(t *testing.T) {
+		// validate status change and issue date set
+	})
+}
+
 func TestPayInvoiceFails(t *testing.T) {
 	t.Run("when no invoice found", func(t *testing.T) {})
 	t.Run("when data storage error occurred", func(t *testing.T) {})
