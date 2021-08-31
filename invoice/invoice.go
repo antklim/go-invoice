@@ -1,6 +1,9 @@
 package invoice
 
-import "time"
+import (
+	"sort"
+	"time"
+)
 
 type Status int
 
@@ -40,7 +43,7 @@ func NewInvoice(id, customer string) Invoice {
 	}
 }
 
-func (inv *Invoice) Equal(other Invoice) bool {
+func (inv *Invoice) Equal(other *Invoice) bool {
 	var invDatesEqual bool
 	if inv.Date == nil && other.Date == nil {
 		invDatesEqual = true
@@ -48,12 +51,28 @@ func (inv *Invoice) Equal(other Invoice) bool {
 		invDatesEqual = inv.Date.Equal(*other.Date)
 	}
 
+	itemsEqual := len(inv.Items) == len(other.Items)
+
+	if itemsEqual {
+		sort.Sort(byItemID(inv.Items))
+		sort.Sort(byItemID(other.Items))
+
+		for i, item := range inv.Items {
+			item := item
+			if !other.Items[i].Equal(&item) {
+				itemsEqual = false
+				break
+			}
+		}
+	}
+
 	return inv.ID == other.ID &&
 		inv.CustomerName == other.CustomerName &&
 		invDatesEqual &&
 		inv.Status == other.Status &&
 		inv.CreatedAt.Equal(other.CreatedAt) &&
-		inv.UpdatedAt.Equal(other.UpdatedAt)
+		inv.UpdatedAt.Equal(other.UpdatedAt) &&
+		itemsEqual
 }
 
 // FormatStatus returns formatted invoice status.
@@ -92,17 +111,19 @@ func (inv *Invoice) AddItem(item Item) {
 }
 
 // DeleteItem deletes an item by ID. This operation is idempotent, repeatable
-// item delete supported.
-func (inv *Invoice) DeleteItem(id string) {
+// item delete supported. Returns true when the item was found and deleted from
+// the items collection.
+func (inv *Invoice) DeleteItem(id string) bool {
 	idx := inv.FindItemIndex(func(item Item) bool {
 		return item.ID == id
 	})
 
 	if idx == -1 {
-		return
+		return false
 	}
 
 	inv.Items = append(inv.Items[:idx], inv.Items[idx+1:]...)
+	return true
 }
 
 type Item struct {
@@ -112,3 +133,17 @@ type Item struct {
 	Qty         uint
 	CreatedAt   time.Time
 }
+
+func (item *Item) Equal(other *Item) bool {
+	return item.ID == other.ID &&
+		item.ProductName == other.ProductName &&
+		item.Price == other.Price &&
+		item.Qty == other.Qty &&
+		item.CreatedAt.Equal(other.CreatedAt)
+}
+
+type byItemID []Item
+
+func (x byItemID) Len() int           { return len(x) }
+func (x byItemID) Less(i, j int) bool { return x[i].ID < x[j].ID }
+func (x byItemID) Swap(i, j int)      { x[i], x[j] = x[j], x[i] }

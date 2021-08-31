@@ -62,4 +62,6 @@ issues:
     - path: _test\.go
       linters:
         - dupl
+        - funlen
         - goconst
+        - gocyclo

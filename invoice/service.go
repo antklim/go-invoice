@@ -104,9 +104,11 @@ func (s *Service) DeleteInvoiceItem(invID, itemID string) error {
 		return fmt.Errorf("item cannot be deleted from %q invoice", inv.FormatStatus())
 	}
 
-	inv.DeleteItem(itemID)
-	if err := s.strg.UpdateInvoice(*inv); err != nil {
-		return errors.Wrapf(err, errUpdateFailed, invID)
+	if ok := inv.DeleteItem(itemID); ok {
+		// update storage only when item collection was changed
+		if err := s.strg.UpdateInvoice(*inv); err != nil {
+			return errors.Wrapf(err, errUpdateFailed, invID)
+		}
 	}
 
 	return nil

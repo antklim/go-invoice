@@ -72,7 +72,7 @@ func TestCreateInvoice(t *testing.T) {
 		if err != nil {
 			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
 		}
-		if !vinv.Equal(inv) {
+		if !inv.Equal(vinv) {
 			t.Errorf("invalid invoice %v, want %v", vinv, inv)
 		}
 	})
@@ -107,7 +107,7 @@ func TestViewInvoice(t *testing.T) {
 		if err != nil {
 			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
 		}
-		if !vinv.Equal(inv) {
+		if !inv.Equal(vinv) {
 			t.Errorf("invalid invoice %v, want %v", vinv, inv)
 		}
 	})
@@ -313,6 +313,7 @@ func TestDeleteInvoiceItem(t *testing.T) {
 			t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
 		}
 
+		// delete an item
 		itemID := inv.Items[0].ID
 		if err := srv.DeleteInvoiceItem(inv.ID, itemID); err != nil {
 			t.Fatalf("DeleteInvoiceItem(%q, %q) failed: %v", inv.ID, itemID, err)
@@ -335,7 +336,39 @@ func TestDeleteInvoiceItem(t *testing.T) {
 		}
 	})
 
-	t.Run("idempotent to repeatable delete", func(t *testing.T) {})
+	t.Run("idempotent to repeatable delete", func(t *testing.T) {
+		nitems := 3
+		// place open invoice
+		inv, err := invoiceAPI.CreateInvoiceWithNItems(nitems)
+		if err != nil {
+			t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
+		}
+
+		// delete an item
+		itemID := inv.Items[0].ID
+		if err := srv.DeleteInvoiceItem(inv.ID, itemID); err != nil {
+			t.Fatalf("DeleteInvoiceItem(%q, %q) failed: %v", inv.ID, itemID, err)
+		}
+
+		vinv1, err := srv.ViewInvoice(inv.ID)
+		if err != nil {
+			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
+		}
+
+		// repeat deletion
+		if err := srv.DeleteInvoiceItem(inv.ID, itemID); err != nil {
+			t.Fatalf("DeleteInvoiceItem(%q, %q) failed: %v", inv.ID, itemID, err)
+		}
+
+		vinv2, err := srv.ViewInvoice(inv.ID)
+		if err != nil {
+			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
+		}
+
+		if !vinv1.Equal(vinv2) {
+			t.Errorf("invalid invoice %v, want %v", vinv2, vinv1)
+		}
+	})
 }
 
 func TestPayInvoiceFails(t *testing.T) {
