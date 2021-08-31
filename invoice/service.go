@@ -9,6 +9,12 @@ import (
 
 // TODO: add error interfaces
 
+var (
+	errFindFailed   = "find invoice %q failed"
+	errUpdateFailed = "update invoice %q failed"
+	errNotFound     = "invoice %q not found"
+)
+
 type Service struct {
 	strg Storage
 }
@@ -31,10 +37,10 @@ func (s *Service) ViewInvoice(id string) (*Invoice, error) {
 func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 	inv, err := s.strg.FindInvoice(id)
 	if err != nil {
-		return errors.Wrapf(err, "find invoice %q failed", id)
+		return errors.Wrapf(err, errFindFailed, id)
 	}
 	if inv == nil {
-		return fmt.Errorf("invoice %q not found", id)
+		return fmt.Errorf(errNotFound, id)
 	}
 
 	if inv.Status != Open {
@@ -43,7 +49,7 @@ func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 
 	inv.CustomerName = name
 	if err := s.strg.UpdateInvoice(*inv); err != nil {
-		return errors.Wrapf(err, "update invoice %q failed", id)
+		return errors.Wrapf(err, errUpdateFailed, id)
 	}
 
 	return nil
@@ -52,10 +58,10 @@ func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 func (s *Service) AddInvoiceItem(id string, item Item) error {
 	inv, err := s.strg.FindInvoice(id)
 	if err != nil {
-		return errors.Wrapf(err, "find invoice %q failed", id)
+		return errors.Wrapf(err, errFindFailed, id)
 	}
 	if inv == nil {
-		return fmt.Errorf("invoice %q not found", id)
+		return fmt.Errorf(errNotFound, id)
 	}
 
 	if inv.Status != Open {
@@ -64,7 +70,7 @@ func (s *Service) AddInvoiceItem(id string, item Item) error {
 
 	inv.Items = append(inv.Items, item)
 	if err := s.strg.UpdateInvoice(*inv); err != nil {
-		return errors.Wrapf(err, "update invoice %q failed", id)
+		return errors.Wrapf(err, errUpdateFailed, id)
 	}
 
 	return nil
