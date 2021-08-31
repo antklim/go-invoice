@@ -61,6 +61,22 @@ func TestCreateInvoice(t *testing.T) {
 		}
 	})
 
+	t.Run("successfully stores the invoice", func(t *testing.T) {
+		customer := "John Doe"
+		inv, err := srv.CreateInvoice(customer)
+		if err != nil {
+			t.Fatalf("CreateInvoice(%q) failed: %v", customer, err)
+		}
+
+		vinv, err := srv.ViewInvoice(inv.ID)
+		if err != nil {
+			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
+		}
+		if !vinv.Equal(inv) {
+			t.Errorf("invalid invoice %v, want %v", vinv, inv)
+		}
+	})
+
 	t.Run("propagates data storage errors", func(t *testing.T) {})
 }
 
@@ -245,8 +261,13 @@ func TestAddInvoiceItem(t *testing.T) {
 }
 
 func TestDeleteInvoiceItem(t *testing.T) {
-	t.Run("when no invoice found", func(t *testing.T) {})
-	t.Run("when data storage error occurred", func(t *testing.T) {})
+	t.Run("fails when no invoice found", func(t *testing.T) {})
+	t.Run("fails when invoice is in the status other than open", func(t *testing.T) {})
+	t.Run("fails when data storage error occurred", func(t *testing.T) {
+		// search failed
+		// update failed
+	})
+	t.Run("successfully deletes invoice item", func(t *testing.T) {})
 }
 
 func TestPayInvoiceFails(t *testing.T) {
@@ -262,8 +283,6 @@ func TestCancelInvoiceFails(t *testing.T) {
 // Following are the business rules tests
 func TestOpenInvoice(t *testing.T) {
 	t.Run("can be updated", func(t *testing.T) {
-		t.Run("items can be added", func(t *testing.T) {})
-
 		t.Run("items can be deleted", func(t *testing.T) {
 			// when deleting non existent item it does not return error
 			// error returned only in case of data access layer
@@ -280,13 +299,7 @@ func TestOpenInvoice(t *testing.T) {
 }
 
 func TestIssuedInvoice(t *testing.T) {
-	t.Run("can be viewed", func(t *testing.T) {})
-
 	t.Run("cannot be updated", func(t *testing.T) {
-		t.Run("issue date cannot be updated", func(t *testing.T) {})
-
-		t.Run("items cannot be added", func(t *testing.T) {})
-
 		t.Run("items cannot be deleted", func(t *testing.T) {})
 	})
 
@@ -298,13 +311,7 @@ func TestIssuedInvoice(t *testing.T) {
 }
 
 func TestClosedInvoice(t *testing.T) {
-	t.Run("can be viewed", func(t *testing.T) {})
-
 	t.Run("cannot be updated", func(t *testing.T) {
-		t.Run("issue date cannot be updated", func(t *testing.T) {})
-
-		t.Run("items cannot be added", func(t *testing.T) {})
-
 		t.Run("items cannot be deleted", func(t *testing.T) {})
 	})
 
