@@ -114,6 +114,9 @@ func (s *Service) DeleteInvoiceItem(invID, itemID string) error {
 	return nil
 }
 
+// IssueInvoice sets invoice the the issued status. If invoice not found
+// by provided ID or any issue occurred during invoice lookup or update an error
+// returned. Only invoices in "open" status are allowed to be issued.
 func (s *Service) IssueInvoice(id string) error {
 	inv, err := s.strg.FindInvoice(id)
 	if err != nil {
