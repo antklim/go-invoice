@@ -237,7 +237,7 @@ func TestAddInvoiceItem(t *testing.T) {
 			t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
 		}
 
-		items := len(inv.Items)
+		nitems := len(inv.Items)
 
 		// add item
 		item := invoiceAPI.ItemFactory()
@@ -250,8 +250,8 @@ func TestAddInvoiceItem(t *testing.T) {
 		if err != nil {
 			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
 		}
-		if len(vinv.Items) != items+1 {
-			t.Errorf("invalid invoice.Items number %d, want %d", len(vinv.Items), items+1)
+		if len(vinv.Items) != nitems+1 {
+			t.Errorf("invalid invoice.Items number %d, want %d", len(vinv.Items), nitems+1)
 		}
 		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
 			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
@@ -292,7 +292,9 @@ func TestDeleteInvoiceItem(t *testing.T) {
 				t.Fatalf("expected DeleteInvoiceItem(%q, %q) to fail when invoice status is %q",
 					inv.ID, itemID, inv.FormatStatus())
 			}
-			if got, want := err.Error(), fmt.Sprintf("item cannot be deleted from %q invoice", inv.FormatStatus()); got != want {
+			got := err.Error()
+			want := fmt.Sprintf("item cannot be deleted from %q invoice", inv.FormatStatus())
+			if got != want {
 				t.Errorf("DeleteInvoiceItem(%q, %q) failed with: %s, want %s", inv.ID, itemID, got, want)
 			}
 		}
@@ -302,7 +304,37 @@ func TestDeleteInvoiceItem(t *testing.T) {
 		// search failed
 		// update failed
 	})
-	t.Run("successfully deletes invoice item", func(t *testing.T) {})
+
+	t.Run("successfully deletes invoice item", func(t *testing.T) {
+		nitems := 3
+		// place open invoice
+		inv, err := invoiceAPI.CreateInvoiceWithNItems(nitems)
+		if err != nil {
+			t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
+		}
+
+		itemID := inv.Items[0].ID
+		if err := srv.DeleteInvoiceItem(inv.ID, itemID); err != nil {
+			t.Fatalf("DeleteInvoiceItem(%q, %q) failed: %v", inv.ID, itemID, err)
+		}
+
+		// validate that item deleted
+		vinv, err := srv.ViewInvoice(inv.ID)
+		if err != nil {
+			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
+		}
+		if len(vinv.Items) != nitems-1 {
+			t.Errorf("invalid invoice.Items number %d, want %d", len(vinv.Items), nitems-1)
+		}
+		if vinv.ContainsItem(itemID) {
+			t.Errorf("invoice %q should not contain item %q", vinv.ID, itemID)
+		}
+		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
+			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
+				vinv.UpdatedAt.Format(time.RFC3339Nano), inv.UpdatedAt.Format(time.RFC3339Nano))
+		}
+	})
+
 	t.Run("idempotent to repeatable delete", func(t *testing.T) {})
 }
 

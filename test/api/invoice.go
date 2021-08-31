@@ -61,6 +61,20 @@ func (api *Invoice) CreateInvoicesWithStatuses(statuses ...invoice.Status) ([]in
 	return invoices, nil
 }
 
+// CreateInvoiceWithNItems generates and stores invoice with n items. It returns
+// created invoice or any error occurred. In error case an empty invoice
+// returned.
+func (api *Invoice) CreateInvoiceWithNItems(n int, opts ...InvoiceOptions) (invoice.Invoice, error) {
+	items := make([]invoice.Item, 0, n)
+	for i := 0; i < n; i++ {
+		items = append(items, api.ItemFactory())
+	}
+
+	opts = append(opts, WithItems(items...))
+
+	return api.CreateInvoice(opts...)
+}
+
 // ItemFactory generates invoice items with default product name, price and
 // quantity. Every method call generates unique item ID and created at time.
 func (api *Invoice) ItemFactory() invoice.Item {
@@ -118,6 +132,12 @@ func WithIssueaDate(date *time.Time) InvoiceOptions {
 func WithStatus(status invoice.Status) InvoiceOptions {
 	return newFuncInvoiceOptions(func(inv *invoice.Invoice) {
 		inv.Status = status
+	})
+}
+
+func WithItems(items ...invoice.Item) InvoiceOptions {
+	return newFuncInvoiceOptions(func(inv *invoice.Invoice) {
+		inv.Items = items
 	})
 }
 

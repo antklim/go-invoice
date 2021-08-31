@@ -65,6 +65,26 @@ func (inv *Invoice) IsClosed() bool {
 	return inv.Status == Paid || inv.Status == Canceled
 }
 
+// FindItemIndex returns the index of the first item in the collection that
+// satisfies the provided testing function. Testing function should returns true
+// to indicate that the satisfying item was found.
+func (inv *Invoice) FindItemIndex(f func(item Item) bool) int {
+	for i, item := range inv.Items {
+		if f(item) {
+			return i
+		}
+	}
+	return -1
+}
+
+// ContainsItem returns true when invoice contains item with the provided ID.
+func (inv *Invoice) ContainsItem(id string) bool {
+	idx := inv.FindItemIndex(func(item Item) bool {
+		return item.ID == id
+	})
+	return idx != -1
+}
+
 type Item struct {
 	ID          string
 	ProductName string
