@@ -27,12 +27,12 @@ func NewIvoiceAPI(strg invoice.Storage) *Invoice {
 // For example:
 //
 //	// Create default invoice.
-//	invapi.CreateInvoice()
+//	testapi.CreateInvoice()
 //
 //	// Create paid invoice for John Wick.
-//	invapi.CreateInvoice(
-//		invapi.WithCustomerName("John Wick"),
-//		invapi.WithStatus(invoice.Paid))
+//	testapi.CreateInvoice(
+//		testapi.WithCustomerName("John Wick"),
+//		testapi.WithStatus(invoice.Paid))
 //
 func (api *Invoice) CreateInvoice(opts ...InvoiceOptions) (invoice.Invoice, error) {
 	inv := defaultInvoice()

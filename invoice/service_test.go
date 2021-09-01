@@ -7,17 +7,17 @@ import (
 
 	"github.com/antklim/go-invoice/invoice"
 	"github.com/antklim/go-invoice/storage"
-	invapi "github.com/antklim/go-invoice/test/api"
+	testapi "github.com/antklim/go-invoice/test/api"
 	"github.com/google/uuid"
 )
 
-func testSetup() (*invoice.Service, *invapi.Invoice, error) {
+func testSetup() (*invoice.Service, *testapi.Invoice, error) {
 	strg, err := storage.Factory("memory")
 	if err != nil {
 		return nil, nil, err
 	}
 	srv := invoice.New(strg)
-	api := invapi.NewIvoiceAPI(strg)
+	api := testapi.NewIvoiceAPI(strg)
 	return srv, api, nil
 }
 
@@ -197,7 +197,7 @@ func TestAddInvoiceItem(t *testing.T) {
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
-		item := invapi.ItemFactory()
+		item := testapi.ItemFactory()
 		err := srv.AddInvoiceItem(invID, item)
 		if err == nil {
 			t.Fatalf("expected AddInvoiceItems(%q, %v) to fail when invoice does not exist", invID, item)
@@ -215,7 +215,7 @@ func TestAddInvoiceItem(t *testing.T) {
 		}
 
 		for _, inv := range invoices {
-			item := invapi.ItemFactory()
+			item := testapi.ItemFactory()
 			err := srv.AddInvoiceItem(inv.ID, item)
 			if err == nil {
 				t.Fatalf("expected AddInvoiceItems(%q, %v) to fail when invoice status is %q",
@@ -244,7 +244,7 @@ func TestAddInvoiceItem(t *testing.T) {
 		nitems := len(inv.Items)
 
 		// add item
-		item := invapi.ItemFactory()
+		item := testapi.ItemFactory()
 		if err := srv.AddInvoiceItem(inv.ID, item); err != nil {
 			t.Fatalf("AddInvoiceItems(%q, %v) failed: %v", inv.ID, item, err)
 		}
@@ -272,7 +272,7 @@ func TestDeleteInvoiceItem(t *testing.T) {
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
-		item := invapi.ItemFactory()
+		item := testapi.ItemFactory()
 		err := srv.DeleteInvoiceItem(invID, item.ID)
 		if err == nil {
 			t.Fatalf("expected DeleteInvoiceItem(%q, %q) to fail when invoice does not exist", invID, item.ID)
@@ -496,7 +496,7 @@ func TestPayInvoice(t *testing.T) {
 
 	t.Run("successfully pays invoice", func(t *testing.T) {
 		// place issued invoice
-		inv, err := invoiceAPI.CreateInvoice(invapi.WithStatus(invoice.Issued))
+		inv, err := invoiceAPI.CreateInvoice(testapi.WithStatus(invoice.Issued))
 		if err != nil {
 			t.Fatalf("invoiceAPI.CreateInvoice() failed: %v", err)
 		}
