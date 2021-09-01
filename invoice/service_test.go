@@ -197,7 +197,7 @@ func TestAddInvoiceItem(t *testing.T) {
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
-		item := invoiceAPI.ItemFactory()
+		item := invapi.ItemFactory()
 		err := srv.AddInvoiceItem(invID, item)
 		if err == nil {
 			t.Fatalf("expected AddInvoiceItems(%q, %v) to fail when invoice does not exist", invID, item)
@@ -215,7 +215,7 @@ func TestAddInvoiceItem(t *testing.T) {
 		}
 
 		for _, inv := range invoices {
-			item := invoiceAPI.ItemFactory()
+			item := invapi.ItemFactory()
 			err := srv.AddInvoiceItem(inv.ID, item)
 			if err == nil {
 				t.Fatalf("expected AddInvoiceItems(%q, %v) to fail when invoice status is %q",
@@ -244,7 +244,7 @@ func TestAddInvoiceItem(t *testing.T) {
 		nitems := len(inv.Items)
 
 		// add item
-		item := invoiceAPI.ItemFactory()
+		item := invapi.ItemFactory()
 		if err := srv.AddInvoiceItem(inv.ID, item); err != nil {
 			t.Fatalf("AddInvoiceItems(%q, %v) failed: %v", inv.ID, item, err)
 		}
@@ -272,7 +272,7 @@ func TestDeleteInvoiceItem(t *testing.T) {
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
-		item := invoiceAPI.ItemFactory()
+		item := invapi.ItemFactory()
 		err := srv.DeleteInvoiceItem(invID, item.ID)
 		if err == nil {
 			t.Fatalf("expected DeleteInvoiceItem(%q, %q) to fail when invoice does not exist", invID, item.ID)

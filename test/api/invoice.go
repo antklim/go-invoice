@@ -67,18 +67,12 @@ func (api *Invoice) CreateInvoicesWithStatuses(statuses ...invoice.Status) ([]in
 func (api *Invoice) CreateInvoiceWithNItems(n int, opts ...InvoiceOptions) (invoice.Invoice, error) {
 	items := make([]invoice.Item, 0, n)
 	for i := 0; i < n; i++ {
-		items = append(items, api.ItemFactory())
+		items = append(items, ItemFactory())
 	}
 
 	opts = append(opts, WithItems(items...))
 
 	return api.CreateInvoice(opts...)
-}
-
-// ItemFactory generates invoice items with default product name, price and
-// quantity. Every method call generates unique item ID and created at time.
-func (api *Invoice) ItemFactory() invoice.Item {
-	return defaultItem()
 }
 
 func defaultInvoice() invoice.Invoice {
@@ -164,4 +158,10 @@ func defaultItem() invoice.Item {
 		Qty:         2,   // nolint:gomnd
 		CreatedAt:   now,
 	}
+}
+
+// ItemFactory generates invoice items with default product name, price and
+// quantity. Every method call generates unique item ID and created at time.
+func ItemFactory() invoice.Item {
+	return defaultItem()
 }
