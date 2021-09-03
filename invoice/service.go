@@ -7,8 +7,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// TODO: add error interfaces
-
 var (
 	errFindFailed   = "find invoice %q failed"
 	errUpdateFailed = "update invoice %q failed"
@@ -44,12 +42,9 @@ func (s *Service) ViewInvoice(id string) (*Invoice, error) {
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Only invoices in "open" status are allowed to be updated.
 func (s *Service) UpdateInvoiceCustomer(id, name string) error {
-	inv, err := s.strg.FindInvoice(id)
+	inv, err := s.findInvoice(id)
 	if err != nil {
-		return errors.Wrapf(err, errFindFailed, id)
-	}
-	if inv == nil {
-		return fmt.Errorf(errNotFound, id)
+		return err
 	}
 
 	if err := inv.UpdateCustomerName(name); err != nil {
@@ -67,12 +62,9 @@ func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Only invoices in "open" status are allowed to be updated.
 func (s *Service) AddInvoiceItem(id string, item Item) error {
-	inv, err := s.strg.FindInvoice(id)
+	inv, err := s.findInvoice(id)
 	if err != nil {
-		return errors.Wrapf(err, errFindFailed, id)
-	}
-	if inv == nil {
-		return fmt.Errorf(errNotFound, id)
+		return err
 	}
 
 	if err := inv.AddItem(item); err != nil {
@@ -90,12 +82,9 @@ func (s *Service) AddInvoiceItem(id string, item Item) error {
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Only invoices in "open" status are allowed to be updated.
 func (s *Service) DeleteInvoiceItem(invID, itemID string) error {
-	inv, err := s.strg.FindInvoice(invID)
+	inv, err := s.findInvoice(invID)
 	if err != nil {
-		return errors.Wrapf(err, errFindFailed, invID)
-	}
-	if inv == nil {
-		return fmt.Errorf(errNotFound, invID)
+		return err
 	}
 
 	ok, err := inv.DeleteItem(itemID)
@@ -117,12 +106,9 @@ func (s *Service) DeleteInvoiceItem(invID, itemID string) error {
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Only invoices in "open" status are allowed to be issued.
 func (s *Service) IssueInvoice(id string) error {
-	inv, err := s.strg.FindInvoice(id)
+	inv, err := s.findInvoice(id)
 	if err != nil {
-		return errors.Wrapf(err, errFindFailed, id)
-	}
-	if inv == nil {
-		return fmt.Errorf(errNotFound, id)
+		return err
 	}
 
 	if err := inv.Issue(); err != nil {
@@ -140,12 +126,9 @@ func (s *Service) IssueInvoice(id string) error {
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Canceled or paid invoices cannot be canceled.
 func (s *Service) CancelInvoice(id string) error {
-	inv, err := s.strg.FindInvoice(id)
+	inv, err := s.findInvoice(id)
 	if err != nil {
-		return errors.Wrapf(err, errFindFailed, id)
-	}
-	if inv == nil {
-		return fmt.Errorf(errNotFound, id)
+		return err
 	}
 
 	if err := inv.Cancel(); err != nil {
@@ -163,12 +146,9 @@ func (s *Service) CancelInvoice(id string) error {
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Only invoices in "issued" status are allowed to be paid.
 func (s *Service) PayInvoice(id string) error {
-	inv, err := s.strg.FindInvoice(id)
+	inv, err := s.findInvoice(id)
 	if err != nil {
-		return errors.Wrapf(err, errFindFailed, id)
-	}
-	if inv == nil {
-		return fmt.Errorf(errNotFound, id)
+		return err
 	}
 
 	if err := inv.Pay(); err != nil {
@@ -180,4 +160,18 @@ func (s *Service) PayInvoice(id string) error {
 	}
 
 	return nil
+}
+
+// findInvoice searches for the invoice by id. If invoice not found or other
+// issues occurred during invoice lookup an error returned. It returns a non-nil
+// pointer to the found invoice.
+func (s *Service) findInvoice(id string) (*Invoice, error) {
+	inv, err := s.strg.FindInvoice(id)
+	if err != nil {
+		return nil, errors.Wrapf(err, errFindFailed, id)
+	}
+	if inv == nil {
+		return nil, fmt.Errorf(errNotFound, id)
+	}
+	return inv, nil
 }
