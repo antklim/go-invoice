@@ -16,16 +16,15 @@ const (
 	Canceled
 )
 
-var statuses = [...]string{
+var statusName = map[Status]string{
 	Open:     "open",
 	Issued:   "issued",
 	Paid:     "paid",
 	Canceled: "canceled",
 }
 
-// FormatStatus returns formatted status.
-func FormatStatus(st Status) string {
-	return statuses[st]
+func (s Status) String() string {
+	return statusName[s]
 }
 
 type Invoice struct {
@@ -70,7 +69,7 @@ func (inv *Invoice) Equal(other *Invoice) bool {
 // cannot be updated.
 func (inv *Invoice) UpdateCustomerName(name string) error {
 	if inv.Status != Open {
-		return fmt.Errorf("%q invoice cannot be updated", FormatStatus(inv.Status))
+		return fmt.Errorf("%q invoice cannot be updated", inv.Status)
 	}
 
 	inv.CustomerName = name
@@ -101,7 +100,7 @@ func (inv *Invoice) ContainsItem(id string) bool {
 // cannot be added.
 func (inv *Invoice) AddItem(item Item) error {
 	if inv.Status != Open {
-		return fmt.Errorf("item cannot be added to %q invoice", FormatStatus(inv.Status))
+		return fmt.Errorf("item cannot be added to %q invoice", inv.Status)
 	}
 
 	inv.Items = append(inv.Items, item)
@@ -113,7 +112,7 @@ func (inv *Invoice) AddItem(item Item) error {
 // the items collection.
 func (inv *Invoice) DeleteItem(id string) (bool, error) {
 	if inv.Status != Open {
-		return false, fmt.Errorf("item cannot be deleted from %q invoice", FormatStatus(inv.Status))
+		return false, fmt.Errorf("item cannot be deleted from %q invoice", inv.Status)
 	}
 
 	idx := inv.FindItemIndex(func(item Item) bool {
@@ -132,7 +131,7 @@ func (inv *Invoice) DeleteItem(id string) (bool, error) {
 // issueable.
 func (inv *Invoice) Issue() error {
 	if inv.Status != Open {
-		return fmt.Errorf("%q invoice cannot be issued", FormatStatus(inv.Status))
+		return fmt.Errorf("%q invoice cannot be issued", inv.Status)
 	}
 
 	inv.Status = Issued
@@ -144,7 +143,7 @@ func (inv *Invoice) Issue() error {
 // Pay sets invoice to paid state. It returns error when invoice is not payable.
 func (inv *Invoice) Pay() error {
 	if inv.Status != Issued {
-		return fmt.Errorf("%q invoice cannot be paid", FormatStatus(inv.Status))
+		return fmt.Errorf("%q invoice cannot be paid", inv.Status)
 	}
 
 	inv.Status = Paid
@@ -155,7 +154,7 @@ func (inv *Invoice) Pay() error {
 // cancelable.
 func (inv *Invoice) Cancel() error {
 	if inv.Status == Canceled || inv.Status == Paid {
-		return fmt.Errorf("%q invoice cannot be canceled", FormatStatus(inv.Status))
+		return fmt.Errorf("%q invoice cannot be canceled", inv.Status)
 	}
 
 	inv.Status = Canceled

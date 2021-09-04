@@ -145,10 +145,10 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 			err := srv.UpdateInvoiceCustomer(inv.ID, customer)
 			if err == nil {
 				t.Fatalf("expected UpdateInvoiceCustomer(%q, %q) to fail when invoice status is %q",
-					inv.ID, customer, invoice.FormatStatus(inv.Status))
+					inv.ID, customer, inv.Status)
 			}
 			got := err.Error()
-			want := fmt.Sprintf("%q invoice cannot be updated", invoice.FormatStatus(inv.Status))
+			want := fmt.Sprintf("%q invoice cannot be updated", inv.Status)
 			if got != want {
 				t.Errorf("UpdateInvoiceCustomer(%q, %q) failed with: %s, want %s", inv.ID, customer, got, want)
 			}
@@ -219,10 +219,10 @@ func TestAddInvoiceItem(t *testing.T) {
 			err := srv.AddInvoiceItem(inv.ID, item)
 			if err == nil {
 				t.Fatalf("expected AddInvoiceItems(%q, %v) to fail when invoice status is %q",
-					inv.ID, item, invoice.FormatStatus(inv.Status))
+					inv.ID, item, inv.Status)
 			}
 			got := err.Error()
-			want := fmt.Sprintf("item cannot be added to %q invoice", invoice.FormatStatus(inv.Status))
+			want := fmt.Sprintf("item cannot be added to %q invoice", inv.Status)
 			if got != want {
 				t.Errorf("AddInvoiceItems(%q, %v) failed with: %s, want %s", inv.ID, item, got, want)
 			}
@@ -294,10 +294,10 @@ func TestDeleteInvoiceItem(t *testing.T) {
 			err := srv.DeleteInvoiceItem(inv.ID, itemID)
 			if err == nil {
 				t.Fatalf("expected DeleteInvoiceItem(%q, %q) to fail when invoice status is %q",
-					inv.ID, itemID, invoice.FormatStatus(inv.Status))
+					inv.ID, itemID, inv.Status)
 			}
 			got := err.Error()
-			want := fmt.Sprintf("item cannot be deleted from %q invoice", invoice.FormatStatus(inv.Status))
+			want := fmt.Sprintf("item cannot be deleted from %q invoice", inv.Status)
 			if got != want {
 				t.Errorf("DeleteInvoiceItem(%q, %q) failed with: %s, want %s", inv.ID, itemID, got, want)
 			}
@@ -403,10 +403,10 @@ func TestIssueInvoice(t *testing.T) {
 			err := srv.IssueInvoice(inv.ID)
 			if err == nil {
 				t.Fatalf("expected IssueInvoice(%q) to fail when invoice status is %q",
-					inv.ID, invoice.FormatStatus(inv.Status))
+					inv.ID, inv.Status)
 			}
 			got := err.Error()
-			want := fmt.Sprintf("%q invoice cannot be issued", invoice.FormatStatus(inv.Status))
+			want := fmt.Sprintf("%q invoice cannot be issued", inv.Status)
 			if got != want {
 				t.Errorf("IssueInvoice(%q) failed with: %s, want %s", inv.ID, got, want)
 			}
@@ -479,10 +479,10 @@ func TestPayInvoice(t *testing.T) {
 			err := srv.PayInvoice(inv.ID)
 			if err == nil {
 				t.Fatalf("expected PayInvoice(%q) to fail when invoice status is %q",
-					inv.ID, invoice.FormatStatus(inv.Status))
+					inv.ID, inv.Status)
 			}
 			got := err.Error()
-			want := fmt.Sprintf("%q invoice cannot be paid", invoice.FormatStatus(inv.Status))
+			want := fmt.Sprintf("%q invoice cannot be paid", inv.Status)
 			if got != want {
 				t.Errorf("PayInvoice(%q) failed with: %s, want %s", inv.ID, got, want)
 			}
@@ -512,8 +512,7 @@ func TestPayInvoice(t *testing.T) {
 			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
 		}
 		if vinv.Status != invoice.Paid {
-			t.Errorf("invalid invoice.Status %q, want %q",
-				invoice.FormatStatus(vinv.Status), invoice.FormatStatus(invoice.Paid))
+			t.Errorf("invalid invoice.Status %q, want %q", vinv.Status, invoice.Paid)
 		}
 		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
 			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
@@ -550,10 +549,10 @@ func TestCancelInvoice(t *testing.T) {
 			err := srv.CancelInvoice(inv.ID)
 			if err == nil {
 				t.Fatalf("expected CancelInvoice(%q) to fail when invoice status is %q",
-					inv.ID, invoice.FormatStatus(inv.Status))
+					inv.ID, inv.Status)
 			}
 			got := err.Error()
-			want := fmt.Sprintf("%q invoice cannot be canceled", invoice.FormatStatus(inv.Status))
+			want := fmt.Sprintf("%q invoice cannot be canceled", inv.Status)
 			if got != want {
 				t.Errorf("CancelInvoice(%q) failed with: %s, want %s", inv.ID, got, want)
 			}
@@ -583,8 +582,7 @@ func TestCancelInvoice(t *testing.T) {
 			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
 		}
 		if vinv.Status != invoice.Canceled {
-			t.Errorf("invalid invoice.Status %q, want %q",
-				invoice.FormatStatus(vinv.Status), invoice.FormatStatus(invoice.Canceled))
+			t.Errorf("invalid invoice.Status %q, want %q", vinv.Status, invoice.Canceled)
 		}
 		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
 			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
