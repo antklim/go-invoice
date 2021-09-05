@@ -27,7 +27,7 @@ func TestCreateInvoice(t *testing.T) {
 		t.Fatalf("testSetup() failed: %v", err)
 	}
 
-	t.Run("creates valid invoice", func(t *testing.T) {
+	t.Run("successfully stores the invoice", func(t *testing.T) {
 		customer := "John Doe"
 		inv, err := srv.CreateInvoice(customer)
 		if err != nil {
@@ -58,14 +58,6 @@ func TestCreateInvoice(t *testing.T) {
 			t.Errorf("invoice.CreatedAt = %s is not equal to invoice.UpdatedAt = %s",
 				inv.CreatedAt.Format(time.RFC3339Nano),
 				inv.UpdatedAt.Format(time.RFC3339Nano))
-		}
-	})
-
-	t.Run("successfully stores the invoice", func(t *testing.T) {
-		customer := "John Doe"
-		inv, err := srv.CreateInvoice(customer)
-		if err != nil {
-			t.Fatalf("CreateInvoice(%q) failed: %v", customer, err)
 		}
 
 		vinv, err := srv.ViewInvoice(inv.ID)
