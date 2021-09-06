@@ -175,9 +175,23 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 		}
 	})
 
-	t.Run("fails when data storage error occurred", func(t *testing.T) {
-		// search failed
-		// update failed
+	t.Run("fails when data storage error occurred - due to invoice search failure", func(t *testing.T) {
+		e := errors.New("storage failed to find invoice")
+		strg := mocks.NewStorage(mocks.WithFindInvoiceError(e))
+		srv := invoice.New(strg)
+
+		invID := uuid.Nil.String()
+		customer := "John Doe"
+		err := srv.UpdateInvoiceCustomer(invID, customer)
+		if err == nil {
+			t.Fatalf("expected UpdateInvoiceCustomer(%q, %q) to fail due to storage error", invID, customer)
+		}
+		if got, want := err.Error(), fmt.Sprintf("find invoice %q failed: %s", invID, e.Error()); got != want {
+			t.Errorf("UpdateInvoiceCustomer(%q, %q) failed with: %s, want %s", invID, customer, got, want)
+		}
+	})
+
+	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
 	})
 
 	t.Run("successfully updates customer name of open invoice", func(t *testing.T) {
@@ -249,9 +263,10 @@ func TestAddInvoiceItem(t *testing.T) {
 		}
 	})
 
-	t.Run("fails when data storage error occurred", func(t *testing.T) {
-		// search failed
-		// update failed
+	t.Run("fails when data storage error occurred - due to invoice search failure", func(t *testing.T) {
+	})
+
+	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
 	})
 
 	t.Run("successfully adds invoice item", func(t *testing.T) {
@@ -324,9 +339,10 @@ func TestDeleteInvoiceItem(t *testing.T) {
 		}
 	})
 
-	t.Run("fails when data storage error occurred", func(t *testing.T) {
-		// search failed
-		// update failed
+	t.Run("fails when data storage error occurred - due to invoice search failure", func(t *testing.T) {
+	})
+
+	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
 	})
 
 	t.Run("successfully deletes invoice item", func(t *testing.T) {
@@ -433,9 +449,10 @@ func TestIssueInvoice(t *testing.T) {
 		}
 	})
 
-	t.Run("fails when data storage error occurred", func(t *testing.T) {
-		// search failed
-		// update failed
+	t.Run("fails when data storage error occurred - due to invoice search failure", func(t *testing.T) {
+	})
+
+	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
 	})
 
 	t.Run("successfully issues invoice", func(t *testing.T) {
@@ -509,9 +526,10 @@ func TestPayInvoice(t *testing.T) {
 		}
 	})
 
-	t.Run("fails when data storage error occurred", func(t *testing.T) {
-		// search failed
-		// update failed
+	t.Run("fails when data storage error occurred - due to invoice search failure", func(t *testing.T) {
+	})
+
+	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
 	})
 
 	t.Run("successfully pays invoice", func(t *testing.T) {
@@ -579,9 +597,10 @@ func TestCancelInvoice(t *testing.T) {
 		}
 	})
 
-	t.Run("fails when data storage error occurred", func(t *testing.T) {
-		// search failed
-		// update failed
+	t.Run("fails when data storage error occurred - due to invoice search failure", func(t *testing.T) {
+	})
+
+	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
 	})
 
 	t.Run("successfully cancels invoice", func(t *testing.T) {
