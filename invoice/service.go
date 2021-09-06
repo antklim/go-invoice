@@ -39,14 +39,14 @@ func (s *Service) CreateInvoice(customerName string) (Invoice, error) {
 // found invoice or nil in case when no invoices selected by ID. Nil invoice
 // pointer also returned in error case.
 func (s *Service) ViewInvoice(id string) (*Invoice, error) {
-	return s.strg.FindInvoice(id)
+	return s.findInvoice(id)
 }
 
 // UpdateInvoiceCustomer updates invoice's customer name. If invoice not found
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Only invoices in "open" status are allowed to be updated.
 func (s *Service) UpdateInvoiceCustomer(id, name string) error {
-	inv, err := s.findInvoice(id)
+	inv, err := s.mustFindInvoice(id)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Only invoices in "open" status are allowed to be updated.
 func (s *Service) AddInvoiceItem(id string, item Item) error {
-	inv, err := s.findInvoice(id)
+	inv, err := s.mustFindInvoice(id)
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (s *Service) AddInvoiceItem(id string, item Item) error {
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Only invoices in "open" status are allowed to be updated.
 func (s *Service) DeleteInvoiceItem(invID, itemID string) error {
-	inv, err := s.findInvoice(invID)
+	inv, err := s.mustFindInvoice(invID)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (s *Service) DeleteInvoiceItem(invID, itemID string) error {
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Only invoices in "open" status are allowed to be issued.
 func (s *Service) IssueInvoice(id string) error {
-	inv, err := s.findInvoice(id)
+	inv, err := s.mustFindInvoice(id)
 	if err != nil {
 		return err
 	}
@@ -130,7 +130,7 @@ func (s *Service) IssueInvoice(id string) error {
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Canceled or paid invoices cannot be canceled.
 func (s *Service) CancelInvoice(id string) error {
-	inv, err := s.findInvoice(id)
+	inv, err := s.mustFindInvoice(id)
 	if err != nil {
 		return err
 	}
@@ -150,7 +150,7 @@ func (s *Service) CancelInvoice(id string) error {
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Only invoices in "issued" status are allowed to be paid.
 func (s *Service) PayInvoice(id string) error {
-	inv, err := s.findInvoice(id)
+	inv, err := s.mustFindInvoice(id)
 	if err != nil {
 		return err
 	}
@@ -166,16 +166,29 @@ func (s *Service) PayInvoice(id string) error {
 	return nil
 }
 
-// findInvoice searches for the invoice by id. If invoice not found or other
+// mustFindInvoice searches for the invoice by id. If invoice not found or other
 // issues occurred during invoice lookup an error returned. It returns a non-nil
 // pointer to the found invoice.
+func (s *Service) mustFindInvoice(id string) (*Invoice, error) {
+	inv, err := s.findInvoice(id)
+	if err != nil {
+		return nil, err
+	}
+	if inv == nil {
+		return nil, fmt.Errorf(errNotFound, id)
+	}
+	return inv, nil
+}
+
+// findInvoice searches for the invoice by id. It returns error only when
+// storage failure occurred during invoice lookup.
+//
+// Invoice pointer is nil in error case or when invoice not found. Otherwise a
+// non-nil pointer to the found invoice returned.
 func (s *Service) findInvoice(id string) (*Invoice, error) {
 	inv, err := s.strg.FindInvoice(id)
 	if err != nil {
 		return nil, errors.Wrapf(err, errFindFailed, id)
-	}
-	if inv == nil {
-		return nil, fmt.Errorf(errNotFound, id)
 	}
 	return inv, nil
 }

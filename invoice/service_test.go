@@ -119,7 +119,20 @@ func TestViewInvoice(t *testing.T) {
 		}
 	})
 
-	t.Run("propagates data storage errors", func(t *testing.T) {})
+	t.Run("propagates data storage errors", func(t *testing.T) {
+		e := errors.New("storage failed to find invoice")
+		strg := mocks.NewStorage(mocks.WithFindInvoiceError(e))
+		srv := invoice.New(strg)
+
+		invID := uuid.Nil.String()
+		_, err := srv.ViewInvoice(invID)
+		if err == nil {
+			t.Fatalf("expected ViewInvoice(%q) to fail due to storage error", invID)
+		}
+		if got, want := err.Error(), fmt.Sprintf("find invoice %q failed: %s", invID, e.Error()); got != want {
+			t.Errorf("ViewInvoice(%q) failed with: %s, want %s", invID, got, want)
+		}
+	})
 }
 
 func TestUpdateInvoiceCustomer(t *testing.T) {
