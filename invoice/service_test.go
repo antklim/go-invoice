@@ -264,6 +264,19 @@ func TestAddInvoiceItem(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice search failure", func(t *testing.T) {
+		e := errors.New("storage failed to find invoice")
+		strg := mocks.NewStorage(mocks.WithFindInvoiceError(e))
+		srv := invoice.New(strg)
+
+		invID := uuid.Nil.String()
+		item := testapi.ItemFactory()
+		err := srv.AddInvoiceItem(invID, item)
+		if err == nil {
+			t.Fatalf("expected AddInvoiceItems(%q, %v) to fail due to storage error", invID, item)
+		}
+		if got, want := err.Error(), fmt.Sprintf("find invoice %q failed: %s", invID, e.Error()); got != want {
+			t.Errorf("AddInvoiceItems(%q, %v) failed with: %s, want %s", invID, item, got, want)
+		}
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
