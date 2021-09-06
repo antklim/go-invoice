@@ -1,6 +1,7 @@
 package invoice_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -8,6 +9,7 @@ import (
 	"github.com/antklim/go-invoice/invoice"
 	"github.com/antklim/go-invoice/storage"
 	testapi "github.com/antklim/go-invoice/test/api"
+	"github.com/antklim/go-invoice/test/mocks"
 	"github.com/google/uuid"
 )
 
@@ -69,7 +71,20 @@ func TestCreateInvoice(t *testing.T) {
 		}
 	})
 
-	t.Run("propagates data storage errors", func(t *testing.T) {})
+	t.Run("propagates data storage errors", func(t *testing.T) {
+		e := errors.New("storage failed to add invoice")
+		strg := mocks.NewStorage(mocks.WithAddInvoiceError(e))
+		srv := invoice.New(strg)
+
+		customer := "John Doe"
+		_, err := srv.CreateInvoice(customer)
+		if err == nil {
+			t.Fatalf("expected CreateInvoice(%q) to fail due to storage error", customer)
+		}
+		if got, want := err.Error(), fmt.Sprintf("create invoice failed: %s", e.Error()); got != want {
+			t.Errorf("CreateInvoice(%q) failed with: %s, want %s", customer, got, want)
+		}
+	})
 }
 
 func TestViewInvoice(t *testing.T) {

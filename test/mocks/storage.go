@@ -1,8 +1,6 @@
 package mocks
 
 import (
-	"sync"
-
 	"github.com/antklim/go-invoice/invoice"
 )
 
@@ -18,15 +16,11 @@ const (
 type Storage struct {
 	errors       map[operation]error
 	foundInvoice *invoice.Invoice
-
-	sync.RWMutex // guards calls
-	calls        map[operation]int
 }
 
 func NewStorage(opts ...StorageOptions) *Storage {
 	strg := &Storage{
 		errors: make(map[operation]error),
-		calls:  make(map[operation]int),
 	}
 
 	for _, o := range opts {
@@ -37,18 +31,10 @@ func NewStorage(opts ...StorageOptions) *Storage {
 }
 
 func (strg *Storage) AddInvoice(inv invoice.Invoice) error {
-	strg.Lock()
-	defer strg.Unlock()
-	strg.calls[addInvoice]++
-
 	return strg.errors[addInvoice]
 }
 
 func (strg *Storage) FindInvoice(id string) (*invoice.Invoice, error) {
-	strg.Lock()
-	defer strg.Unlock()
-	strg.calls[findInvoice]++
-
 	if err := strg.errors[findInvoice]; err != nil {
 		return nil, err
 	}
@@ -57,10 +43,6 @@ func (strg *Storage) FindInvoice(id string) (*invoice.Invoice, error) {
 }
 
 func (strg *Storage) UpdateInvoice(inv invoice.Invoice) error {
-	strg.Lock()
-	defer strg.Unlock()
-	strg.calls[updateInvoice]++
-
 	return strg.errors[updateInvoice]
 }
 

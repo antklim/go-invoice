@@ -8,6 +8,7 @@ import (
 )
 
 var (
+	errCreateFailed = "create invoice failed"
 	errFindFailed   = "find invoice %q failed"
 	errUpdateFailed = "update invoice %q failed"
 	errNotFound     = "invoice %q not found"
@@ -28,6 +29,9 @@ func (s *Service) CreateInvoice(customerName string) (Invoice, error) {
 	invID := uuid.NewString()
 	inv := NewInvoice(invID, customerName)
 	err := s.strg.AddInvoice(inv)
+	if err != nil {
+		err = errors.Wrap(err, errCreateFailed)
+	}
 	return inv, err
 }
 
