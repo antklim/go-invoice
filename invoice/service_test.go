@@ -476,6 +476,18 @@ func TestIssueInvoice(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice search failure", func(t *testing.T) {
+		e := errors.New("storage failed to find invoice")
+		strg := mocks.NewStorage(mocks.WithFindInvoiceError(e))
+		srv := invoice.New(strg)
+
+		invID := uuid.Nil.String()
+		err := srv.IssueInvoice(invID)
+		if err == nil {
+			t.Fatalf("expected IssueInvoice(%q) to fail due to storage error", invID)
+		}
+		if got, want := err.Error(), fmt.Sprintf("find invoice %q failed: %s", invID, e.Error()); got != want {
+			t.Errorf("IssueInvoice(%q) failed with: %s, want %s", invID, got, want)
+		}
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
@@ -553,6 +565,18 @@ func TestPayInvoice(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice search failure", func(t *testing.T) {
+		e := errors.New("storage failed to find invoice")
+		strg := mocks.NewStorage(mocks.WithFindInvoiceError(e))
+		srv := invoice.New(strg)
+
+		invID := uuid.Nil.String()
+		err := srv.PayInvoice(invID)
+		if err == nil {
+			t.Fatalf("expected PayInvoice(%q) to fail due to storage error", invID)
+		}
+		if got, want := err.Error(), fmt.Sprintf("find invoice %q failed: %s", invID, e.Error()); got != want {
+			t.Errorf("PayInvoice(%q) failed with: %s, want %s", invID, got, want)
+		}
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
@@ -624,6 +648,18 @@ func TestCancelInvoice(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice search failure", func(t *testing.T) {
+		e := errors.New("storage failed to find invoice")
+		strg := mocks.NewStorage(mocks.WithFindInvoiceError(e))
+		srv := invoice.New(strg)
+
+		invID := uuid.Nil.String()
+		err := srv.CancelInvoice(invID)
+		if err == nil {
+			t.Fatalf("expected CancelInvoice(%q) to fail due to storage error", invID)
+		}
+		if got, want := err.Error(), fmt.Sprintf("find invoice %q failed: %s", invID, e.Error()); got != want {
+			t.Errorf("CancelInvoice(%q) failed with: %s, want %s", invID, got, want)
+		}
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
