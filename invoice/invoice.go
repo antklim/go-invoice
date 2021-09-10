@@ -23,9 +23,7 @@ var statusName = map[Status]string{
 	Canceled: "canceled",
 }
 
-func (s Status) String() string {
-	return statusName[s]
-}
+func (s Status) String() string { return statusName[s] }
 
 type Invoice struct {
 	ID           string
@@ -85,6 +83,7 @@ func (inv *Invoice) FindItemIndex(f func(item Item) bool) int {
 			return i
 		}
 	}
+
 	return -1
 }
 
@@ -93,6 +92,7 @@ func (inv *Invoice) ContainsItem(id string) bool {
 	idx := inv.FindItemIndex(func(item Item) bool {
 		return item.ID == id
 	})
+
 	return idx != -1
 }
 
