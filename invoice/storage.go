@@ -5,3 +5,7 @@ type Storage interface {
 	FindInvoice(string) (*Invoice, error)
 	UpdateInvoice(Invoice) error
 }
+
+type StorageFactory interface {
+	MakeStorage() Storage
+}

@@ -1,17 +1,25 @@
 package storage
 
 import (
-	"fmt"
-
 	"github.com/antklim/go-invoice/invoice"
+	"github.com/antklim/go-invoice/storage/dynamo"
 	"github.com/antklim/go-invoice/storage/memory"
 )
 
-func Factory(kind string) (invoice.Storage, error) {
-	switch kind {
-	case "memory":
-		return memory.New(), nil
-	default:
-		return nil, fmt.Errorf("unknown storage %q", kind)
-	}
+type Memory struct{}
+
+func (Memory) MakeStorage() invoice.Storage {
+	return memory.New()
 }
+
+var _ invoice.StorageFactory = new(Memory)
+
+type Dynamo struct {
+	client dynamo.API
+}
+
+func (s *Dynamo) MakeStorage() invoice.Storage {
+	return dynamo.New(s.client)
+}
+
+var _ invoice.StorageFactory = (*Dynamo)(nil)
