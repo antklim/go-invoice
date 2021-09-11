@@ -13,6 +13,8 @@ type Memory struct {
 	records      map[string]invoice.Invoice
 }
 
+var _ invoice.Storage = (*Memory)(nil)
+
 func New() *Memory {
 	return &Memory{records: make(map[string]invoice.Invoice)}
 }

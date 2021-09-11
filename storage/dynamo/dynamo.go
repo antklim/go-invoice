@@ -16,6 +16,8 @@ type Dynamo struct {
 	client API
 }
 
+var _ invoice.Storage = (*Dynamo)(nil)
+
 func New(client API) *Dynamo {
 	return &Dynamo{client: client}
 }
@@ -31,5 +33,3 @@ func (d *Dynamo) FindInvoice(id string) (*invoice.Invoice, error) {
 func (d *Dynamo) UpdateInvoice(inv invoice.Invoice) error {
 	return errors.New("not implemented")
 }
-
-var _ invoice.Storage = (*Dynamo)(nil)
