@@ -14,15 +14,17 @@ const (
 	query
 )
 
+var dynamoOps = map[string]dynamoOp{
+	"PutItem": putItem,
+	"Query":   query,
+}
+
 func dynamoOpFrom(op string) dynamoOp {
-	switch op {
-	case "PutItem":
-		return putItem
-	case "Query":
-		return query
-	default:
+	dop, ok := dynamoOps[op]
+	if !ok {
 		return -1
 	}
+	return dop
 }
 
 type DynamoAPI struct {
