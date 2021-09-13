@@ -6,59 +6,8 @@ import (
 	"github.com/antklim/go-invoice/invoice"
 	"github.com/antklim/go-invoice/storage/dynamo"
 	"github.com/antklim/go-invoice/test/mocks"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
-
-func testInvoiceItems(t *testing.T, dItems []dynamo.Item, items []invoice.Item) {
-	if len(dItems) != len(items) {
-		t.Errorf("invalid dInvoice.items %v, want %v", dItems, items)
-	}
-}
-
-func testPutItemInput(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItemInput) {
-	if got, want := aws.StringValue(input.TableName), "invoices"; got != want {
-		t.Errorf("invalid PutItem input table %q, want %q", got, want)
-	}
-
-	var dinv dynamo.Invoice
-	if err := dynamodbattribute.UnmarshalMap(input.Item, &dinv); err != nil {
-		t.Fatalf("dynamodbattribute.UnmarshalMap() failed: %v", err)
-	}
-
-	if dinv.PK == "" {
-		t.Error("dInvoice.PK should not be empty")
-	}
-
-	if dinv.ID != inv.ID {
-		t.Errorf("invalid dInvoice.ID %q, want %q", dinv.ID, inv.ID)
-	}
-
-	if dinv.CustomerName != inv.CustomerName {
-		t.Errorf("invalid dInvoice.CustomerName %q, want %q", dinv.CustomerName, inv.CustomerName)
-	}
-
-	if (dinv.Date == nil && inv.Date != nil) ||
-		(dinv.Date != nil && inv.Date == nil) ||
-		(dinv.Date != nil && inv.Date != nil && !dinv.Date.Equal(*inv.Date)) {
-		t.Errorf("invalid dInvoice.Date %v, want %v", dinv.Date, inv.Date)
-	}
-
-	if dinv.Status != inv.Status.String() {
-		t.Errorf("invalid dInvoice.Status %q, want %q", dinv.Status, inv.Status.String())
-	}
-
-	testInvoiceItems(t, dinv.Items, inv.Items)
-
-	if !dinv.CreatedAt.Equal(inv.CreatedAt) {
-		t.Errorf("invalid dInvoice.CreatedAt %v, want %v", dinv.CreatedAt, inv.CreatedAt)
-	}
-
-	if !dinv.UpdatedAt.Equal(inv.UpdatedAt) {
-		t.Errorf("invalid dInvoice.UpdatedAt %v, want %v", dinv.UpdatedAt, inv.UpdatedAt)
-	}
-}
 
 func TestInvoicePK(t *testing.T) {
 	inv := invoice.NewInvoice("123ABC", "customer")
