@@ -8,6 +8,7 @@ import (
 	"github.com/antklim/go-invoice/test/mocks"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
 func testPutItemInput(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItemInput) {
@@ -15,7 +16,18 @@ func testPutItemInput(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItem
 		t.Errorf("invalid PutItem input table %q, want %q", got, want)
 	}
 
-	// TODO: unmarshal dynamo attributes to dInvoice
+	var dinv dynamo.Invoice
+	if err := dynamodbattribute.UnmarshalMap(input.Item, &dinv); err != nil {
+		t.Fatalf("dynamodbattribute.UnmarshalMap() failed: %v", err)
+	}
+
+	if dinv.PK == "" {
+		t.Error("dInvoice.PK should not be empty")
+	}
+
+	if dinv.ID != inv.ID {
+		t.Errorf("invalid dInvoice.ID %q, want %q", dinv.ID, inv.ID)
+	}
 }
 
 func TestAddInvoice(t *testing.T) {

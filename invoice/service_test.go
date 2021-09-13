@@ -32,11 +32,11 @@ func TestCreateInvoice(t *testing.T) {
 		}
 
 		if inv.ID == "" {
-			t.Errorf("invoice.ID should not be empty")
+			t.Error("invoice.ID should not be empty")
 		}
 
 		if inv.Date != nil {
-			t.Errorf("invalid invoice.Date, want nil")
+			t.Error("invalid invoice.Date, want nil")
 		}
 
 		if inv.CustomerName != customer {
