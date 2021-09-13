@@ -16,10 +16,11 @@ var _ invoice.StorageFactory = new(Memory)
 
 type Dynamo struct {
 	client dynamo.API
+	table  string
 }
 
 func (s *Dynamo) MakeStorage() invoice.Storage {
-	return dynamo.New(s.client)
+	return dynamo.New(s.client, s.table)
 }
 
 var _ invoice.StorageFactory = (*Dynamo)(nil)
