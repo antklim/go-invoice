@@ -4,23 +4,23 @@ import (
 	"github.com/antklim/go-invoice/invoice"
 )
 
-type operation int
+type memoryOp int
 
 const (
-	addInvoice operation = iota
+	addInvoice memoryOp = iota
 	findInvoice
 	updateInvoice
 )
 
 // Storage describes storage mock.
 type Storage struct {
-	errors       map[operation]error
+	errors       map[memoryOp]error
 	foundInvoice *invoice.Invoice
 }
 
 func NewStorage(opts ...StorageOptions) *Storage {
 	strg := &Storage{
-		errors: make(map[operation]error),
+		errors: make(map[memoryOp]error),
 	}
 
 	for _, o := range opts {
