@@ -99,6 +99,9 @@ func (d *Dynamo) AddInvoice(inv invoice.Invoice) error {
 		TableName: aws.String(d.table),
 		Item:      item,
 	}
+
+	// TODO: set conditional expression
+
 	_, err = d.client.PutItem(input)
 	return err
 }

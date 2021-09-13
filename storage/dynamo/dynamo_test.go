@@ -47,23 +47,8 @@ func TestAddInvoice(t *testing.T) {
 		}
 
 		testPutItemInput(t, inv, dinput)
-	})
 
-	t.Run("fails when trying to add axisting invoice", func(t *testing.T) {
-		// client := mocks.DynamoAPI{}
-		// strg := dynamo.New(&client, "invoices")
-		// inv := invoice.NewInvoice("123", "customer")
-		// inv.AddItem(invoice.NewItem("456", "pen", 1000, 3))
-
-		// if err := strg.AddInvoice(inv); err != nil {
-		// 	t.Errorf("AddInvoice(%v) failed: %v", inv, err)
-		// }
-		// err := strg.AddInvoice(inv)
-		// if err == nil {
-		// 	t.Errorf("expected second call AddInvoice(%v) to fail", inv)
-		// } else if got, want := err.Error(), `ID "123" exists`; got != want {
-		// 	t.Errorf("second call AddInvoice(%v) = %v, want %v", inv, got, want)
-		// }
+		// TODO: verify conditional expression
 	})
 }
 
