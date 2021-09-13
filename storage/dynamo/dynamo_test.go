@@ -2,24 +2,28 @@ package dynamo_test
 
 import (
 	"testing"
+
+	"github.com/antklim/go-invoice/invoice"
+	"github.com/antklim/go-invoice/storage/dynamo"
+	"github.com/antklim/go-invoice/test/mocks"
 )
 
 func TestAddInvoice(t *testing.T) {
-	t.Skip("WIP")
-
 	t.Run("called with correct input", func(t *testing.T) {
-		// client := mocks.DynamoAPI{}
-		// strg := dynamo.New(&client, "invoices")
-		// inv := invoice.NewInvoice("123", "customer")
-		// inv.AddItem(invoice.NewItem("456", "pen", 1000, 3))
+		client := mocks.NewDynamoAPI()
+		strg := dynamo.New(client, "invoices")
+		inv := invoice.NewInvoice("123", "customer")
+		if err := inv.AddItem(invoice.NewItem("456", "pen", 1000, 3)); err != nil {
+			t.Errorf("inv.AddItem() failed: %v", err)
+		}
 
-		// if err := strg.AddInvoice(inv); err != nil {
-		// 	t.Errorf("AddInvoice(%v) failed: %v", inv, err)
-		// }
+		if err := strg.AddInvoice(inv); err != nil {
+			t.Errorf("AddInvoice(%v) failed: %v", inv, err)
+		}
 
-		// if got, want := client.CalledTimes("PutItem"), 1; got != want {
-		// 	t.Errorf("client.PutItem() called %d times, want %d call(s)", got, want)
-		// }
+		if got, want := client.CalledTimes("PutItem"), 1; got != want {
+			t.Errorf("client.PutItem() called %d times, want %d call(s)", got, want)
+		}
 
 		// input := client.NthCall("PutItem", 1)
 		// expectedInput := &dynamodb.PutItemInput{
