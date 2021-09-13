@@ -6,7 +6,17 @@ import (
 	"github.com/antklim/go-invoice/invoice"
 	"github.com/antklim/go-invoice/storage/dynamo"
 	"github.com/antklim/go-invoice/test/mocks"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
+
+func testPutItemInput(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItemInput) {
+	if got, want := aws.StringValue(input.TableName), "invoices"; got != want {
+		t.Errorf("invalid PutItem input table %q, want %q", got, want)
+	}
+
+	// TODO: unmarshal dynamo attributes to dInvoice
+}
 
 func TestAddInvoice(t *testing.T) {
 	t.Run("called with correct input", func(t *testing.T) {
@@ -25,10 +35,18 @@ func TestAddInvoice(t *testing.T) {
 			t.Errorf("client.PutItem() called %d times, want %d call(s)", got, want)
 		}
 
-		// input := client.NthCall("PutItem", 1)
-		// expectedInput := &dynamodb.PutItemInput{
-		// 	TableName: aws.String("invoices"),
-		// }
+		ncall := 1
+		input := client.NthCall("PutItem", ncall)
+		if input == nil {
+			t.Fatalf("input of PutItem call #%d is nil", ncall)
+		}
+
+		dinput, ok := input.(*dynamodb.PutItemInput)
+		if !ok {
+			t.Errorf("type of PutItem input is %T, want *dynamodb.PutItemInput", input)
+		}
+
+		testPutItemInput(t, inv, dinput)
 	})
 
 	t.Run("fails when trying to add axisting invoice", func(t *testing.T) {

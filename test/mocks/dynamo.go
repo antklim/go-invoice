@@ -60,15 +60,36 @@ func (api *DynamoAPI) Query(input *dynamodb.QueryInput) (*dynamodb.QueryOutput, 
 	return nil, api.errors[query]
 }
 
+// CalledTimes returns amount of times the DynamoDB operation was called. It
+// returns -1 when unknown operation provided.
 func (api *DynamoAPI) CalledTimes(op string) int {
 	api.RLock()
-	defer api.RUnlock()
-
 	times, ok := api.callsTimes[dynamoOpFrom(op)]
+	api.RUnlock()
+
 	if !ok {
 		return -1
 	}
 	return times
+}
+
+// NthCall returns input of nth operation to DynamoDB. Counter n starts from 1.
+// It returns nil in case of unknown operation or when n is greater than amount
+// of calls recorded.
+func (api *DynamoAPI) NthCall(op string, n int) interface{} {
+	api.RLock()
+	calls, ok := api.callsArgs[dynamoOpFrom(op)]
+	api.RUnlock()
+
+	if !ok {
+		return nil
+	}
+
+	if n <= 0 || n > len(calls) {
+		return nil
+	}
+
+	return calls[n-1]
 }
 
 func (api *DynamoAPI) recordPutItemCall(input *dynamodb.PutItemInput) {
