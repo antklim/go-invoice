@@ -14,7 +14,6 @@ import (
 const (
 	dKeyDelim        = "#"
 	dInvoicePKPrefix = "INVOICE"
-	dItemPKPrefix    = "ITEM"
 )
 
 type dInvoice struct {
@@ -53,7 +52,6 @@ func dInvoicePartitionKey(inv invoice.Invoice) string {
 }
 
 type dItem struct {
-	PK          string    `dynamodbav:"pk"`
 	ID          string    `dynamodbav:"id"`
 	ProductName string    `dynamodbav:"productName"`
 	Price       uint      `dynamodbav:"price"`
@@ -62,19 +60,13 @@ type dItem struct {
 }
 
 func newDitem(item invoice.Item) dItem {
-	pk := dItemPartitionKey(item)
 	return dItem{
-		PK:          pk,
 		ID:          item.ID,
 		ProductName: item.ProductName,
 		Price:       item.Price,
 		Qty:         item.Qty,
 		CreatedAt:   item.CreatedAt,
 	}
-}
-
-func dItemPartitionKey(item invoice.Item) string {
-	return fmt.Sprintf("%s%s%s", dItemPKPrefix, dKeyDelim, item.ID)
 }
 
 type API interface {

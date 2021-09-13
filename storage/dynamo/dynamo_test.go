@@ -60,9 +60,13 @@ func testPutItemInput(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItem
 	}
 }
 
-func TestDynamoPKFormats(t *testing.T) {
-	t.Run("has valid invoice PK format", func(t *testing.T) {})
-	t.Run("has valid invoice item PK format", func(t *testing.T) {})
+func TestInvoicePK(t *testing.T) {
+	inv := invoice.NewInvoice("123ABC", "customer")
+	got := dynamo.InvoicePartitionKey(inv)
+	want := "INVOICE#123ABC"
+	if got != want {
+		t.Errorf("invalid invoice partition key %q, want %q", got, want)
+	}
 }
 
 func TestAddInvoice(t *testing.T) {
