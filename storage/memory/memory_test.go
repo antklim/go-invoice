@@ -16,6 +16,7 @@ func TestAddInvoice(t *testing.T) {
 		t.Errorf("AddInvoice(%v) failed: %v", inv, err)
 	}
 
+	// TODO: move second call check to the service level
 	err := strg.AddInvoice(inv)
 	if err == nil {
 		t.Errorf("expected second call AddInvoice(%v) to fail", inv)

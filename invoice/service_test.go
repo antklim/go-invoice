@@ -182,6 +182,7 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
+		// TODO: implement
 	})
 
 	t.Run("successfully updates customer name of open invoice", func(t *testing.T) {
@@ -267,6 +268,7 @@ func TestAddInvoiceItem(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
+		// TODO: implement
 	})
 
 	t.Run("successfully adds invoice item", func(t *testing.T) {
@@ -353,6 +355,7 @@ func TestDeleteInvoiceItem(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
+		// TODO: implement
 	})
 
 	t.Run("successfully deletes invoice item", func(t *testing.T) {
@@ -472,6 +475,7 @@ func TestIssueInvoice(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
+		// TODO: implement
 	})
 
 	t.Run("successfully issues invoice", func(t *testing.T) {
@@ -558,6 +562,7 @@ func TestPayInvoice(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
+		// TODO: implement
 	})
 
 	t.Run("successfully pays invoice", func(t *testing.T) {
@@ -638,6 +643,7 @@ func TestCancelInvoice(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
+		// TODO: implement
 	})
 
 	t.Run("successfully cancels invoice", func(t *testing.T) {
