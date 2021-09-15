@@ -47,8 +47,7 @@ func TestAddInvoice(t *testing.T) {
 		}
 
 		testPutItemInput(t, inv, dinput)
-
-		// TODO: verify conditional expression
+		testPutItemConditionExression(t, inv, dinput)
 	})
 }
 

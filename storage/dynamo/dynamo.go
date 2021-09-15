@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
 
 const (
@@ -95,12 +96,21 @@ func (d *Dynamo) AddInvoice(inv invoice.Invoice) error {
 		return err
 	}
 
-	input := &dynamodb.PutItemInput{
-		TableName: aws.String(d.table),
-		Item:      item,
+	cond := expression.Name("id").NotEqual(expression.Value(inv.ID))
+	expr, err := expression.NewBuilder().
+		WithCondition(cond).
+		Build()
+	if err != nil {
+		return err
 	}
 
-	// TODO: set conditional expression
+	input := &dynamodb.PutItemInput{
+		TableName:                 aws.String(d.table),
+		Item:                      item,
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		ConditionExpression:       expr.Condition(),
+	}
 
 	_, err = d.client.PutItem(input)
 	return err

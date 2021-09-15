@@ -102,3 +102,22 @@ func testPutItemInput(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItem
 		t.Errorf("invalid dInvoice.UpdatedAt %v, want %v", dinv.UpdatedAt, inv.UpdatedAt)
 	}
 }
+
+func testPutItemConditionExression(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItemInput) {
+	if got, want := aws.StringValue(input.ConditionExpression), "#0 <> :0"; got != want {
+		t.Errorf("PutItem condition expression %q, want %q", got, want)
+	}
+
+	if got, want := aws.StringValue(input.ExpressionAttributeNames["#0"]), "id"; got != want {
+		t.Errorf("PutItem condition expression: #0 attribute name %q, want %q", got, want)
+	}
+
+	var id string
+	if err := dynamodbattribute.Unmarshal(input.ExpressionAttributeValues[":0"], &id); err != nil {
+		t.Fatalf("PutItem condition expression: unmarshal :0 attribute value failed: %v", err)
+	}
+
+	if id != inv.ID {
+		t.Errorf("PutItem condition expression: :0 attribute value %q, want %q", id, inv.ID)
+	}
+}
