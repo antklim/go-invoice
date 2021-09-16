@@ -10,12 +10,15 @@ import (
 )
 
 func TestInvoicePK(t *testing.T) {
-	inv := invoice.NewInvoice("123ABC", "customer")
-	got := dynamo.InvoicePartitionKey(inv)
+	got := dynamo.InvoicePartitionKey("123ABC")
 	want := "INVOICE#123ABC"
 	if got != want {
 		t.Errorf("invalid invoice partition key %q, want %q", got, want)
 	}
+}
+
+func TestInvoiceMarshalUnmarshal(t *testing.T) {
+	// TODO: test invoice -> dInvoice -> invoice
 }
 
 func TestAddInvoice(t *testing.T) {
@@ -49,13 +52,35 @@ func TestAddInvoice(t *testing.T) {
 		}
 
 		testPutItemInput(t, inv, dinput)
-		testPutItemConditionExression(t, inv, dinput)
+		testPutItemConditionExression(t, inv.ID, dinput)
 	})
 }
 
 func TestFindInvoice(t *testing.T) {
-	// TODO: implement
-	t.Skip("not implemented")
+	client := mocks.NewDynamoAPI()
+	strg := dynamo.New(client, "invoices")
+	invID := "123"
+
+	if _, err := strg.FindInvoice(invID); err != nil {
+		t.Errorf("FindInvoice(%q) failed: %v", invID, err)
+	}
+
+	if got, want := client.CalledTimes("Query"), 1; got != want {
+		t.Errorf("client.Query() called %d times, want %d call(s)", got, want)
+	}
+
+	ncall := 1
+	input := client.NthCall("Query", ncall)
+	if input == nil {
+		t.Fatalf("input of Query call #%d is nil", ncall)
+	}
+
+	dinput, ok := input.(*dynamodb.QueryInput)
+	if !ok {
+		t.Errorf("type of Query input is %T, want *dynamodb.Query", input)
+	}
+
+	testQueryInput(t, invID, dinput)
 }
 
 func TestUpdateInvoice(t *testing.T) {

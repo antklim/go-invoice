@@ -62,7 +62,7 @@ func testInvoiceItems(t *testing.T, dItems []dynamo.Item, items []invoice.Item) 
 
 func testPutItemInput(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItemInput) {
 	if got, want := aws.StringValue(input.TableName), "invoices"; got != want {
-		t.Errorf("invalid PutItem input table %q, want %q", got, want)
+		t.Errorf("invalid PutItemInput table %q, want %q", got, want)
 	}
 
 	var dinv dynamo.Invoice
@@ -103,7 +103,7 @@ func testPutItemInput(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItem
 	}
 }
 
-func testPutItemConditionExression(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItemInput) {
+func testPutItemConditionExression(t *testing.T, id string, input *dynamodb.PutItemInput) {
 	if got, want := aws.StringValue(input.ConditionExpression), "#0 <> :0"; got != want {
 		t.Errorf("PutItem condition expression %q, want %q", got, want)
 	}
@@ -112,12 +112,35 @@ func testPutItemConditionExression(t *testing.T, inv invoice.Invoice, input *dyn
 		t.Errorf("PutItem condition expression: #0 attribute name %q, want %q", got, want)
 	}
 
-	var id string
-	if err := dynamodbattribute.Unmarshal(input.ExpressionAttributeValues[":0"], &id); err != nil {
+	var qid string
+	if err := dynamodbattribute.Unmarshal(input.ExpressionAttributeValues[":0"], &qid); err != nil {
 		t.Fatalf("PutItem condition expression: unmarshal :0 attribute value failed: %v", err)
 	}
 
-	if id != inv.ID {
-		t.Errorf("PutItem condition expression: :0 attribute value %q, want %q", id, inv.ID)
+	if qid != id {
+		t.Errorf("PutItem condition expression: :0 attribute value %q, want %q", qid, id)
+	}
+}
+
+func testQueryInput(t *testing.T, id string, input *dynamodb.QueryInput) {
+	if got, want := aws.StringValue(input.TableName), "invoices"; got != want {
+		t.Errorf("invalid QueryInput table %q, want %q", got, want)
+	}
+
+	if got, want := aws.StringValue(input.KeyConditionExpression), "#0 = :0"; got != want {
+		t.Errorf("QueryInput key condition expression %q, want %q", got, want)
+	}
+
+	if got, want := aws.StringValue(input.ExpressionAttributeNames["#0"]), "pk"; got != want {
+		t.Errorf("QueryInput key condition expression: #0 attribute name %q, want %q", got, want)
+	}
+
+	var qid string
+	if err := dynamodbattribute.Unmarshal(input.ExpressionAttributeValues[":0"], &qid); err != nil {
+		t.Fatalf("QueryInput key condition expression: unmarshal :0 attribute value failed: %v", err)
+	}
+
+	if want := "INVOICE#" + id; qid != want {
+		t.Errorf("QueryInput key condition expression: :0 attribute value %q, want %q", qid, want)
 	}
 }

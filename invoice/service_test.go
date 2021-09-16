@@ -13,6 +13,8 @@ import (
 	"github.com/google/uuid"
 )
 
+// TODO: switch between different storages based on env variable
+
 func testSetup() (*invoice.Service, *testapi.Invoice) {
 	f := new(storage.Memory)
 	strg := f.MakeStorage()

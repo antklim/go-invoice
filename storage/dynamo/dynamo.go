@@ -35,7 +35,7 @@ func newDinvoice(inv invoice.Invoice) dInvoice {
 		dItems = append(dItems, dItem)
 	}
 
-	pk := dInvoicePartitionKey(inv)
+	pk := dInvoicePartitionKey(inv.ID)
 	return dInvoice{
 		PK:           pk,
 		ID:           inv.ID,
@@ -48,8 +48,9 @@ func newDinvoice(inv invoice.Invoice) dInvoice {
 	}
 }
 
-func dInvoicePartitionKey(inv invoice.Invoice) string {
-	return fmt.Sprintf("%s%s%s", dInvoicePKPrefix, dKeyDelim, inv.ID)
+// dInvoicePartitionKey builds invoice partition key based on invoice id.
+func dInvoicePartitionKey(id string) string {
+	return fmt.Sprintf("%s%s%s", dInvoicePKPrefix, dKeyDelim, id)
 }
 
 type dItem struct {
@@ -117,7 +118,30 @@ func (d *Dynamo) AddInvoice(inv invoice.Invoice) error {
 }
 
 func (d *Dynamo) FindInvoice(id string) (*invoice.Invoice, error) {
-	return nil, errors.New("not implemented")
+	cond := expression.Key("pk").Equal(expression.Value(dInvoicePartitionKey(id)))
+	expr, err := expression.NewBuilder().
+		WithKeyCondition(cond).
+		Build()
+	if err != nil {
+		return nil, err
+	}
+
+	input := &dynamodb.QueryInput{
+		TableName:                 aws.String(d.table),
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		KeyConditionExpression:    expr.KeyCondition(),
+	}
+
+	_, err = d.client.Query(input)
+	if err != nil {
+		return nil, err
+	}
+
+	// dInv, err := unmarshalDinvoice(result.Items)
+
+	// return dInv.ToInvoice(), nil
+	return nil, nil
 }
 
 func (d *Dynamo) UpdateInvoice(inv invoice.Invoice) error {
