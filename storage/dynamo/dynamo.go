@@ -64,8 +64,8 @@ func invoiceUnmarshal(inv invoice.Invoice) *dInvoice {
 	}
 }
 
-func queryOutputUnmarshal(output *dynamodb.QueryOutput) (*dInvoice, error) {
-	return nil, errors.New("queryOutputUnmarshal: not implemented")
+func getItemOutputUnmarshal(output *dynamodb.GetItemOutput) (*dInvoice, error) {
+	return nil, errors.New("getItemOutputUnmarshal: not implemented")
 }
 
 // unmarshalDinvoice unmarshals value v to an instance of dInvoice.
@@ -74,8 +74,8 @@ func unmarshalDinvoice(v interface{}) (*dInvoice, error) {
 		return invoiceUnmarshal(inv), nil
 	}
 
-	if output, ok := v.(*dynamodb.QueryOutput); ok {
-		return queryOutputUnmarshal(output)
+	if output, ok := v.(*dynamodb.GetItemOutput); ok {
+		return getItemOutputUnmarshal(output)
 	}
 
 	return nil, errUnknownUnmarshalSource
@@ -105,8 +105,8 @@ func newDitem(item invoice.Item) dItem {
 }
 
 type API interface {
+	GetItem(*dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error)
 	PutItem(*dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
-	Query(*dynamodb.QueryInput) (*dynamodb.QueryOutput, error)
 }
 
 type Dynamo struct {
@@ -155,22 +155,18 @@ func (d *Dynamo) AddInvoice(inv invoice.Invoice) error {
 }
 
 func (d *Dynamo) FindInvoice(id string) (*invoice.Invoice, error) {
-	cond := expression.Key("pk").Equal(expression.Value(dInvoicePartitionKey(id)))
-	expr, err := expression.NewBuilder().
-		WithKeyCondition(cond).
-		Build()
+	primaryKey := map[string]string{"pk": dInvoicePartitionKey(id)}
+	pk, err := dynamodbattribute.MarshalMap(primaryKey)
 	if err != nil {
 		return nil, err
 	}
 
-	input := &dynamodb.QueryInput{
-		TableName:                 aws.String(d.table),
-		ExpressionAttributeNames:  expr.Names(),
-		ExpressionAttributeValues: expr.Values(),
-		KeyConditionExpression:    expr.KeyCondition(),
+	input := &dynamodb.GetItemInput{
+		TableName: aws.String(d.table),
+		Key:       pk,
 	}
 
-	result, err := d.client.Query(input)
+	result, err := d.client.GetItem(input)
 	if err != nil {
 		return nil, err
 	}

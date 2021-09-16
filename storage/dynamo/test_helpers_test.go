@@ -122,25 +122,17 @@ func testPutItemConditionExression(t *testing.T, id string, input *dynamodb.PutI
 	}
 }
 
-func testQueryInput(t *testing.T, id string, input *dynamodb.QueryInput) {
+func testGetItemInput(t *testing.T, id string, input *dynamodb.GetItemInput) {
 	if got, want := aws.StringValue(input.TableName), "invoices"; got != want {
-		t.Errorf("invalid QueryInput table %q, want %q", got, want)
+		t.Errorf("invalid GetItemInput table %q, want %q", got, want)
 	}
 
-	if got, want := aws.StringValue(input.KeyConditionExpression), "#0 = :0"; got != want {
-		t.Errorf("QueryInput key condition expression %q, want %q", got, want)
+	var pk struct{ PK string }
+	if err := dynamodbattribute.UnmarshalMap(input.Key, &pk); err != nil {
+		t.Fatalf("GetItemInput key unmarshal failed: %v", err)
 	}
 
-	if got, want := aws.StringValue(input.ExpressionAttributeNames["#0"]), "pk"; got != want {
-		t.Errorf("QueryInput key condition expression: #0 attribute name %q, want %q", got, want)
-	}
-
-	var qid string
-	if err := dynamodbattribute.Unmarshal(input.ExpressionAttributeValues[":0"], &qid); err != nil {
-		t.Fatalf("QueryInput key condition expression: unmarshal :0 attribute value failed: %v", err)
-	}
-
-	if want := "INVOICE#" + id; qid != want {
-		t.Errorf("QueryInput key condition expression: :0 attribute value %q, want %q", qid, want)
+	if want := "INVOICE#" + id; pk.PK != want {
+		t.Errorf("GetItemInput key value %q, want %q", pk.PK, want)
 	}
 }

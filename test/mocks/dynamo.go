@@ -10,13 +10,13 @@ import (
 type dynamoOp int
 
 const (
-	putItem dynamoOp = iota
-	query
+	getItem dynamoOp = iota
+	putItem
 )
 
 var dynamoOps = map[string]dynamoOp{
+	"GetItem": getItem,
 	"PutItem": putItem,
-	"Query":   query,
 }
 
 func dynamoOpFrom(op string) dynamoOp {
@@ -44,20 +44,20 @@ func NewDynamoAPI() *DynamoAPI {
 
 var _ dynamo.API = (*DynamoAPI)(nil)
 
+func (api *DynamoAPI) GetItem(input *dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error) {
+	api.Lock()
+	defer api.Unlock()
+	api.recordGetItemCall(input)
+
+	return nil, api.errors[getItem]
+}
+
 func (api *DynamoAPI) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
 	api.Lock()
 	defer api.Unlock()
 	api.recordPutItemCall(input)
 
 	return nil, api.errors[putItem]
-}
-
-func (api *DynamoAPI) Query(input *dynamodb.QueryInput) (*dynamodb.QueryOutput, error) {
-	api.Lock()
-	defer api.Unlock()
-	api.recordQueryCall(input)
-
-	return nil, api.errors[query]
 }
 
 // CalledTimes returns amount of times the DynamoDB operation was called. It
@@ -97,7 +97,7 @@ func (api *DynamoAPI) recordPutItemCall(input *dynamodb.PutItemInput) {
 	api.callsArgs[putItem] = append(api.callsArgs[putItem], input)
 }
 
-func (api *DynamoAPI) recordQueryCall(input *dynamodb.QueryInput) {
-	api.callsTimes[query]++
-	api.callsArgs[query] = append(api.callsArgs[query], input)
+func (api *DynamoAPI) recordGetItemCall(input *dynamodb.GetItemInput) {
+	api.callsTimes[getItem]++
+	api.callsArgs[getItem] = append(api.callsArgs[getItem], input)
 }

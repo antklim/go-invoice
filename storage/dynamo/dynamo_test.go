@@ -65,22 +65,22 @@ func TestFindInvoice(t *testing.T) {
 		t.Errorf("FindInvoice(%q) failed: %v", invID, err)
 	}
 
-	if got, want := client.CalledTimes("Query"), 1; got != want {
-		t.Errorf("client.Query() called %d times, want %d call(s)", got, want)
+	if got, want := client.CalledTimes("GetItem"), 1; got != want {
+		t.Errorf("client.GetItem() called %d times, want %d call(s)", got, want)
 	}
 
 	ncall := 1
-	input := client.NthCall("Query", ncall)
+	input := client.NthCall("GetItem", ncall)
 	if input == nil {
-		t.Fatalf("input of Query call #%d is nil", ncall)
+		t.Fatalf("input of GetItem call #%d is nil", ncall)
 	}
 
-	dinput, ok := input.(*dynamodb.QueryInput)
+	dinput, ok := input.(*dynamodb.GetItemInput)
 	if !ok {
-		t.Errorf("type of Query input is %T, want *dynamodb.Query", input)
+		t.Errorf("type of GetItem input is %T, want *dynamodb.GetItemInput", input)
 	}
 
-	testQueryInput(t, invID, dinput)
+	testGetItemInput(t, invID, dinput)
 }
 
 func TestUpdateInvoice(t *testing.T) {
