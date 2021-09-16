@@ -103,22 +103,35 @@ func testPutItemInput(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItem
 	}
 }
 
-func testPutItemConditionExression(t *testing.T, id string, input *dynamodb.PutItemInput) {
+func testAddItemConditionExression(t *testing.T, id string, input *dynamodb.PutItemInput) {
 	if got, want := aws.StringValue(input.ConditionExpression), "#0 <> :0"; got != want {
 		t.Errorf("PutItem condition expression %q, want %q", got, want)
 	}
 
-	if got, want := aws.StringValue(input.ExpressionAttributeNames["#0"]), "id"; got != want {
-		t.Errorf("PutItem condition expression: #0 attribute name %q, want %q", got, want)
+	testPutItemExpressionAttribute(t, "0", "id", id, input)
+}
+
+func testUpdateItemConditionExression(t *testing.T, id string, input *dynamodb.PutItemInput) {
+	if got, want := aws.StringValue(input.ConditionExpression), "#0 === :0"; got != want {
+		t.Errorf("PutItem condition expression %q, want %q", got, want)
+	}
+	testPutItemExpressionAttribute(t, "0", "id", id, input)
+}
+
+// testPutItemExpressionAttribute tests that expression attribute with the index
+// idx mapped to the expected field name and value val.
+func testPutItemExpressionAttribute(t *testing.T, idx, name, val string, input *dynamodb.PutItemInput) {
+	if got := aws.StringValue(input.ExpressionAttributeNames["#"+idx]); got != name {
+		t.Errorf("PutItem condition expression: #%s attribute name %q, want %q", idx, got, name)
 	}
 
-	var qid string
-	if err := dynamodbattribute.Unmarshal(input.ExpressionAttributeValues[":0"], &qid); err != nil {
-		t.Fatalf("PutItem condition expression: unmarshal :0 attribute value failed: %v", err)
+	var actual string
+	if err := dynamodbattribute.Unmarshal(input.ExpressionAttributeValues[":"+idx], &actual); err != nil {
+		t.Fatalf("PutItem condition expression: unmarshal :%s attribute value failed: %v", idx, err)
 	}
 
-	if qid != id {
-		t.Errorf("PutItem condition expression: :0 attribute value %q, want %q", qid, id)
+	if actual != val {
+		t.Errorf("PutItem condition expression: :%s attribute value %q, want %q", idx, actual, val)
 	}
 }
 

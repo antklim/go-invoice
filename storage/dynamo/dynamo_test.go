@@ -26,11 +26,6 @@ func TestAddInvoice(t *testing.T) {
 		client := mocks.NewDynamoAPI()
 		strg := dynamo.New(client, "invoices")
 		inv := invoice.NewInvoice("123", "customer")
-		// TODO: move add item to update test
-		// Adding item to invoice to verify marshaling of putitem input
-		if err := inv.AddItem(invoice.NewItem("456", "pen", 1000, 3)); err != nil {
-			t.Errorf("inv.AddItem() failed: %v", err)
-		}
 
 		if err := strg.AddInvoice(inv); err != nil {
 			t.Errorf("AddInvoice(%v) failed: %v", inv, err)
@@ -52,7 +47,7 @@ func TestAddInvoice(t *testing.T) {
 		}
 
 		testPutItemInput(t, inv, dinput)
-		testPutItemConditionExression(t, inv.ID, dinput)
+		testAddItemConditionExression(t, inv.ID, dinput)
 	})
 }
 
@@ -84,6 +79,32 @@ func TestFindInvoice(t *testing.T) {
 }
 
 func TestUpdateInvoice(t *testing.T) {
-	// TODO: implement
-	t.Skip("not implemented")
+	client := mocks.NewDynamoAPI()
+	strg := dynamo.New(client, "invoices")
+	inv := invoice.NewInvoice("123", "customer")
+	if err := inv.AddItem(invoice.NewItem("456", "pen", 1000, 3)); err != nil {
+		t.Errorf("inv.AddItem() failed: %v", err)
+	}
+
+	if err := strg.UpdateInvoice(inv); err != nil {
+		t.Errorf("UpdateInvoice(%v) failed: %v", inv, err)
+	}
+
+	if got, want := client.CalledTimes("PutItem"), 1; got != want {
+		t.Errorf("client.PutItem() called %d times, want %d call(s)", got, want)
+	}
+
+	ncall := 1
+	input := client.NthCall("PutItem", ncall)
+	if input == nil {
+		t.Fatalf("input of PutItem call #%d is nil", ncall)
+	}
+
+	dinput, ok := input.(*dynamodb.PutItemInput)
+	if !ok {
+		t.Errorf("type of PutItem input is %T, want *dynamodb.PutItemInput", input)
+	}
+
+	testPutItemInput(t, inv, dinput)
+	testUpdateItemConditionExression(t, inv.ID, dinput)
 }
