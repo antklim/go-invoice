@@ -7,9 +7,10 @@ import (
 	"github.com/antklim/go-invoice/storage"
 )
 
+// TODO: switch between different storages based on env variable
+
 func TestAddInvoiceFails(t *testing.T) {
 	t.Run("when repeat adding existing invoice", func(t *testing.T) {
-		// TODO: switch between different storages based on env variable
 		f := new(storage.Memory)
 		strg := f.MakeStorage()
 
@@ -29,7 +30,6 @@ func TestAddInvoiceFails(t *testing.T) {
 
 func TestUpdateInvoiceFails(t *testing.T) {
 	t.Run("when updating non-existing invoice", func(t *testing.T) {
-		// TODO: switch between different storages based on env variable
 		f := new(storage.Memory)
 		strg := f.MakeStorage()
 		inv := invoice.NewInvoice("123", "customer")

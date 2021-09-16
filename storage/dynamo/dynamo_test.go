@@ -52,9 +52,11 @@ func TestAddInvoice(t *testing.T) {
 }
 
 func TestFindInvoice(t *testing.T) {
+	// TODO: implement
 	t.Skip("not implemented")
 }
 
 func TestUpdateInvoice(t *testing.T) {
+	// TODO: implement
 	t.Skip("not implemented")
 }
