@@ -8,23 +8,6 @@ import (
 	"github.com/antklim/go-invoice/storage/memory"
 )
 
-func TestAddInvoice(t *testing.T) {
-	strg := memory.New()
-	inv := invoice.NewInvoice("123", "customer")
-
-	if err := strg.AddInvoice(inv); err != nil {
-		t.Errorf("AddInvoice(%v) failed: %v", inv, err)
-	}
-
-	// TODO: move second call check to the service level
-	err := strg.AddInvoice(inv)
-	if err == nil {
-		t.Errorf("expected second call AddInvoice(%v) to fail", inv)
-	} else if got, want := err.Error(), `ID "123" exists`; got != want {
-		t.Errorf("second call AddInvoice(%v) = %v, want %v", inv, got, want)
-	}
-}
-
 func TestFindInvoice(t *testing.T) {
 	strg := memory.New()
 	inv := invoice.NewInvoice("123", "customer")
@@ -47,18 +30,6 @@ func TestFindInvoice(t *testing.T) {
 	}
 	if vinv == nil {
 		t.Errorf("FindInvoice(%q) invoice expected, got nil", inv.ID)
-	}
-}
-
-func TestUpdateInvoiceError(t *testing.T) {
-	strg := memory.New()
-	inv := invoice.NewInvoice("123", "customer")
-
-	err := strg.UpdateInvoice(inv)
-	if err == nil {
-		t.Errorf("expected UpdateInvoice(%v) to fail", inv)
-	} else if got, want := err.Error(), `invoice "123" not found`; got != want {
-		t.Errorf("UpdateInvoice(%v) = %v, want %v", inv, got, want)
 	}
 }
 
