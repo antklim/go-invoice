@@ -88,8 +88,8 @@ func testPutItemInput(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItem
 		t.Errorf("invalid dInvoice.Date %v, want %v", dinv.Date, inv.Date)
 	}
 
-	if dinv.Status != inv.Status.String() {
-		t.Errorf("invalid dInvoice.Status %q, want %q", dinv.Status, inv.Status.String())
+	if invoice.Status(dinv.Status) != inv.Status {
+		t.Errorf("invalid dInvoice.Status %d, want %d", dinv.Status, inv.Status)
 	}
 
 	testInvoiceItems(t, dinv.Items, inv.Items)

@@ -24,30 +24,34 @@ type dInvoice struct {
 	ID           string     `dynamodbav:"id"`
 	CustomerName string     `dynamodbav:"customerName"`
 	Date         *time.Time `dynamodbav:"issueDate"`
-	Status       string     `dynamodbav:"status"`
+	Status       int        `dynamodbav:"status"`
 	Items        []dItem    `dynamodbav:"items"`
 	CreatedAt    time.Time  `dynamodbav:"createdAt"`
 	UpdatedAt    time.Time  `dynamodbav:"updatedAt"`
 }
 
-func (dInv *dInvoice) InvoiceMarshal() *invoice.Invoice {
-	// TODO: marshal status
-	// TODO: marshal items
-	return &invoice.Invoice{
+func (dInv *dInvoice) InvoiceMarshal() invoice.Invoice {
+	items := make([]invoice.Item, 0, len(dInv.Items))
+	for _, dItem := range dInv.Items {
+		item := dItem.InvoiceItemMarshal()
+		items = append(items, item)
+	}
+
+	return invoice.Invoice{
 		ID:           dInv.ID,
 		CustomerName: dInv.CustomerName,
 		Date:         dInv.Date,
-		// Status:       inv.Status.String(),
-		// Items:        dItems,
-		CreatedAt: dInv.CreatedAt,
-		UpdatedAt: dInv.UpdatedAt,
+		Status:       invoice.Status(dInv.Status),
+		Items:        items,
+		CreatedAt:    dInv.CreatedAt,
+		UpdatedAt:    dInv.UpdatedAt,
 	}
 }
 
 func invoiceUnmarshal(inv invoice.Invoice) *dInvoice {
 	dItems := make([]dItem, 0, len(inv.Items))
 	for _, invItem := range inv.Items {
-		dItem := newDitem(invItem)
+		dItem := invoiceItemUnmarshal(invItem)
 		dItems = append(dItems, dItem)
 	}
 
@@ -57,7 +61,7 @@ func invoiceUnmarshal(inv invoice.Invoice) *dInvoice {
 		ID:           inv.ID,
 		CustomerName: inv.CustomerName,
 		Date:         inv.Date,
-		Status:       inv.Status.String(),
+		Status:       int(inv.Status),
 		Items:        dItems,
 		CreatedAt:    inv.CreatedAt,
 		UpdatedAt:    inv.UpdatedAt,
@@ -103,7 +107,17 @@ type dItem struct {
 	CreatedAt   time.Time `dynamodbav:"createdAt"`
 }
 
-func newDitem(item invoice.Item) dItem {
+func (di *dItem) InvoiceItemMarshal() invoice.Item {
+	return invoice.Item{
+		ID:          di.ID,
+		ProductName: di.ProductName,
+		Price:       di.Price,
+		Qty:         di.Qty,
+		CreatedAt:   di.CreatedAt,
+	}
+}
+
+func invoiceItemUnmarshal(item invoice.Item) dItem {
 	return dItem{
 		ID:          item.ID,
 		ProductName: item.ProductName,
@@ -188,7 +202,8 @@ func (d *Dynamo) FindInvoice(id string) (*invoice.Invoice, error) {
 		return nil, nil
 	}
 
-	return dInv.InvoiceMarshal(), nil
+	inv := dInv.InvoiceMarshal()
+	return &inv, nil
 }
 
 func (d *Dynamo) UpdateInvoice(inv invoice.Invoice) error {
