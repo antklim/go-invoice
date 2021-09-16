@@ -23,6 +23,8 @@ func TestAddInvoice(t *testing.T) {
 		client := mocks.NewDynamoAPI()
 		strg := dynamo.New(client, "invoices")
 		inv := invoice.NewInvoice("123", "customer")
+		// TODO: move add item to update test
+		// Adding item to invoice to verify marshaling of putitem input
 		if err := inv.AddItem(invoice.NewItem("456", "pen", 1000, 3)); err != nil {
 			t.Errorf("inv.AddItem() failed: %v", err)
 		}
