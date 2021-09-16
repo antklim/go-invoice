@@ -65,7 +65,16 @@ func invoiceUnmarshal(inv invoice.Invoice) *dInvoice {
 }
 
 func getItemOutputUnmarshal(output *dynamodb.GetItemOutput) (*dInvoice, error) {
-	return nil, errors.New("getItemOutputUnmarshal: not implemented")
+	if output == nil {
+		return nil, nil
+	}
+
+	dInv := dInvoice{}
+	if err := dynamodbattribute.UnmarshalMap(output.Item, &dInv); err != nil {
+		return nil, err
+	}
+
+	return &dInv, nil
 }
 
 // unmarshalDinvoice unmarshals value v to an instance of dInvoice.
@@ -174,6 +183,9 @@ func (d *Dynamo) FindInvoice(id string) (*invoice.Invoice, error) {
 	dInv, err := unmarshalDinvoice(result)
 	if err != nil {
 		return nil, err
+	}
+	if dInv == nil {
+		return nil, nil
 	}
 
 	return dInv.InvoiceMarshal(), nil
