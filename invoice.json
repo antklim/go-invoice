@@ -1,0 +1,20 @@
+{
+  "pk": {
+    "S": "INVOICE#170bf55e-ca81-4a17-99ad-54f6411d610d"
+  },
+  "sk": {
+    "S": "INVOICE#170bf55e-ca81-4a17-99ad-54f6411d610d"
+  },
+  "id": {
+    "S": "170bf55e-ca81-4a17-99ad-54f6411d610d"
+  },
+  "ProductCategory": {
+    "S": "Sporting Goods"
+  },
+  "Price": {
+    "N": "650"
+  },
+  "qty": {
+    "N": "10"
+  }
+}

@@ -12,6 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
 
+var errUnknownUnmarshalSource = errors.New("unknown unmarshal source")
+
 const (
 	dKeyDelim        = "#"
 	dInvoicePKPrefix = "INVOICE"
@@ -28,7 +30,21 @@ type dInvoice struct {
 	UpdatedAt    time.Time  `dynamodbav:"updatedAt"`
 }
 
-func newDinvoice(inv invoice.Invoice) dInvoice {
+func (dInv *dInvoice) InvoiceMarshal() *invoice.Invoice {
+	// TODO: marshal status
+	// TODO: marshal items
+	return &invoice.Invoice{
+		ID:           dInv.ID,
+		CustomerName: dInv.CustomerName,
+		Date:         dInv.Date,
+		// Status:       inv.Status.String(),
+		// Items:        dItems,
+		CreatedAt: dInv.CreatedAt,
+		UpdatedAt: dInv.UpdatedAt,
+	}
+}
+
+func invoiceUnmarshal(inv invoice.Invoice) *dInvoice {
 	dItems := make([]dItem, 0, len(inv.Items))
 	for _, invItem := range inv.Items {
 		dItem := newDitem(invItem)
@@ -36,7 +52,7 @@ func newDinvoice(inv invoice.Invoice) dInvoice {
 	}
 
 	pk := dInvoicePartitionKey(inv.ID)
-	return dInvoice{
+	return &dInvoice{
 		PK:           pk,
 		ID:           inv.ID,
 		CustomerName: inv.CustomerName,
@@ -46,6 +62,23 @@ func newDinvoice(inv invoice.Invoice) dInvoice {
 		CreatedAt:    inv.CreatedAt,
 		UpdatedAt:    inv.UpdatedAt,
 	}
+}
+
+func queryOutputUnmarshal(output *dynamodb.QueryOutput) (*dInvoice, error) {
+	return nil, errors.New("queryOutputUnmarshal: not implemented")
+}
+
+// unmarshalDinvoice unmarshals value v to an instance of dInvoice.
+func unmarshalDinvoice(v interface{}) (*dInvoice, error) {
+	if inv, ok := v.(invoice.Invoice); ok {
+		return invoiceUnmarshal(inv), nil
+	}
+
+	if output, ok := v.(*dynamodb.QueryOutput); ok {
+		return queryOutputUnmarshal(output)
+	}
+
+	return nil, errUnknownUnmarshalSource
 }
 
 // dInvoicePartitionKey builds invoice partition key based on invoice id.
@@ -91,7 +124,11 @@ func New(client API, table string) *Dynamo {
 }
 
 func (d *Dynamo) AddInvoice(inv invoice.Invoice) error {
-	dinv := newDinvoice(inv)
+	dinv, err := unmarshalDinvoice(inv)
+	if err != nil {
+		return err
+	}
+
 	item, err := dynamodbattribute.MarshalMap(dinv)
 	if err != nil {
 		return err
@@ -133,15 +170,17 @@ func (d *Dynamo) FindInvoice(id string) (*invoice.Invoice, error) {
 		KeyConditionExpression:    expr.KeyCondition(),
 	}
 
-	_, err = d.client.Query(input)
+	result, err := d.client.Query(input)
 	if err != nil {
 		return nil, err
 	}
 
-	// dInv, err := unmarshalDinvoice(result.Items)
+	dInv, err := unmarshalDinvoice(result)
+	if err != nil {
+		return nil, err
+	}
 
-	// return dInv.ToInvoice(), nil
-	return nil, nil
+	return dInv.InvoiceMarshal(), nil
 }
 
 func (d *Dynamo) UpdateInvoice(inv invoice.Invoice) error {
