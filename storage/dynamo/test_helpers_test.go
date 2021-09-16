@@ -112,7 +112,7 @@ func testAddItemConditionExression(t *testing.T, id string, input *dynamodb.PutI
 }
 
 func testUpdateItemConditionExression(t *testing.T, id string, input *dynamodb.PutItemInput) {
-	if got, want := aws.StringValue(input.ConditionExpression), "#0 === :0"; got != want {
+	if got, want := aws.StringValue(input.ConditionExpression), "#0 = :0"; got != want {
 		t.Errorf("PutItem condition expression %q, want %q", got, want)
 	}
 	testPutItemExpressionAttribute(t, "0", "id", id, input)
@@ -129,7 +129,6 @@ func testPutItemExpressionAttribute(t *testing.T, idx, name, val string, input *
 	if err := dynamodbattribute.Unmarshal(input.ExpressionAttributeValues[":"+idx], &actual); err != nil {
 		t.Fatalf("PutItem condition expression: unmarshal :%s attribute value failed: %v", idx, err)
 	}
-
 	if actual != val {
 		t.Errorf("PutItem condition expression: :%s attribute value %q, want %q", idx, actual, val)
 	}

@@ -147,16 +147,6 @@ func New(client API, table string) *Dynamo {
 }
 
 func (d *Dynamo) AddInvoice(inv invoice.Invoice) error {
-	dinv, err := unmarshalDinvoice(inv)
-	if err != nil {
-		return err
-	}
-
-	item, err := dynamodbattribute.MarshalMap(dinv)
-	if err != nil {
-		return err
-	}
-
 	cond := expression.Name("id").NotEqual(expression.Value(inv.ID))
 	expr, err := expression.NewBuilder().
 		WithCondition(cond).
@@ -165,16 +155,7 @@ func (d *Dynamo) AddInvoice(inv invoice.Invoice) error {
 		return err
 	}
 
-	input := &dynamodb.PutItemInput{
-		TableName:                 aws.String(d.table),
-		Item:                      item,
-		ExpressionAttributeNames:  expr.Names(),
-		ExpressionAttributeValues: expr.Values(),
-		ConditionExpression:       expr.Condition(),
-	}
-
-	_, err = d.client.PutItem(input)
-	return err
+	return d.upsertInvoice(inv, expr)
 }
 
 func (d *Dynamo) FindInvoice(id string) (*invoice.Invoice, error) {
@@ -207,5 +188,37 @@ func (d *Dynamo) FindInvoice(id string) (*invoice.Invoice, error) {
 }
 
 func (d *Dynamo) UpdateInvoice(inv invoice.Invoice) error {
-	return errors.New("not implemented")
+	cond := expression.Name("id").Equal(expression.Value(inv.ID))
+	expr, err := expression.NewBuilder().
+		WithCondition(cond).
+		Build()
+	if err != nil {
+		return err
+	}
+
+	return d.upsertInvoice(inv, expr)
+}
+
+// upsertInvoice inserts or updates an invoice depending on provided expression.
+func (d *Dynamo) upsertInvoice(inv invoice.Invoice, expr expression.Expression) error {
+	dinv, err := unmarshalDinvoice(inv)
+	if err != nil {
+		return err
+	}
+
+	item, err := dynamodbattribute.MarshalMap(dinv)
+	if err != nil {
+		return err
+	}
+
+	input := &dynamodb.PutItemInput{
+		TableName:                 aws.String(d.table),
+		Item:                      item,
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		ConditionExpression:       expr.Condition(),
+	}
+
+	_, err = d.client.PutItem(input)
+	return err
 }
