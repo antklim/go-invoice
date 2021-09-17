@@ -184,7 +184,21 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
-		// TODO: implement
+		e := errors.New("storage failed to update invoice")
+		inv := invoice.NewInvoice(uuid.NewString(), "John Doe")
+		strg := mocks.NewStorage(
+			mocks.WithFoundInvoice(&inv),
+			mocks.WithUpdateInvoiceError(e))
+		srv := invoice.New(strg)
+
+		customer := "John Wick"
+		err := srv.UpdateInvoiceCustomer(inv.ID, customer)
+		if err == nil {
+			t.Fatalf("expected UpdateInvoiceCustomer(%q, %q) to fail due to storage error", inv.ID, customer)
+		}
+		if got, want := err.Error(), fmt.Sprintf("update invoice %q failed: %s", inv.ID, e.Error()); got != want {
+			t.Errorf("UpdateInvoiceCustomer(%q, %q) failed with: %s, want %s", inv.ID, customer, got, want)
+		}
 	})
 
 	t.Run("successfully updates customer name of open invoice", func(t *testing.T) {
@@ -270,7 +284,21 @@ func TestAddInvoiceItem(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
-		// TODO: implement
+		e := errors.New("storage failed to update invoice")
+		inv := invoice.NewInvoice(uuid.NewString(), "John Doe")
+		strg := mocks.NewStorage(
+			mocks.WithFoundInvoice(&inv),
+			mocks.WithUpdateInvoiceError(e))
+		srv := invoice.New(strg)
+
+		item := testapi.ItemFactory()
+		err := srv.AddInvoiceItem(inv.ID, item)
+		if err == nil {
+			t.Fatalf("expected AddInvoiceItems(%q, %v) to fail due to storage error", inv.ID, item)
+		}
+		if got, want := err.Error(), fmt.Sprintf("update invoice %q failed: %s", inv.ID, e.Error()); got != want {
+			t.Errorf("AddInvoiceItems(%q, %v) failed with: %s, want %s", inv.ID, item, got, want)
+		}
 	})
 
 	t.Run("successfully adds invoice item", func(t *testing.T) {
