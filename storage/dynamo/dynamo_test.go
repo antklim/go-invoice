@@ -18,7 +18,38 @@ func TestInvoicePK(t *testing.T) {
 }
 
 func TestInvoiceMarshalUnmarshal(t *testing.T) {
-	// TODO: test invoice -> dInvoice -> invoice
+	t.Run("dInvoice - invoice unmarshal/marshal", func(t *testing.T) {
+		inv := invoice.NewInvoice("123", "customer")
+		if err := inv.AddItem(invoice.NewItem("456", "pen", 1000, 3)); err != nil {
+			t.Errorf("inv.AddItem() failed: %v", err)
+		}
+
+		dInv, err := dynamo.UnmarshalDinvoice(inv)
+		if err != nil {
+			t.Errorf("UnmarshalDinvoice(%v) failed: %v", inv, err)
+		}
+
+		if got := dInv.InvoiceMarshal(); !inv.Equal(&got) {
+			t.Errorf("invalid invoice %v, want %v", got, inv)
+		}
+	})
+
+	t.Run("dInvoice - get item output unmarshal", func(t *testing.T) {
+		{
+			output := (*dynamodb.GetItemOutput)(nil)
+			dInv, err := dynamo.UnmarshalDinvoice(output)
+			if err != nil {
+				t.Errorf("UnmarshalDinvoice(%v) failed: %v", output, err)
+			}
+			if dInv != nil {
+				t.Errorf("UnmarshalDinvoice(%v): %v, want nil", output, dInv)
+			}
+		}
+
+		{
+			// TODO: unmarshal invoice with item (read value from json test data)
+		}
+	})
 }
 
 func TestAddInvoice(t *testing.T) {
@@ -82,9 +113,6 @@ func TestUpdateInvoice(t *testing.T) {
 	client := mocks.NewDynamoAPI()
 	strg := dynamo.New(client, "invoices")
 	inv := invoice.NewInvoice("123", "customer")
-	if err := inv.AddItem(invoice.NewItem("456", "pen", 1000, 3)); err != nil {
-		t.Errorf("inv.AddItem() failed: %v", err)
-	}
 
 	if err := strg.UpdateInvoice(inv); err != nil {
 		t.Errorf("UpdateInvoice(%v) failed: %v", inv, err)
