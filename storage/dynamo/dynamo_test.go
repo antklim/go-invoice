@@ -66,6 +66,14 @@ func TestInvoiceMarshalUnmarshal(t *testing.T) {
 					nItems: 0,
 					status: int(invoice.Open),
 				},
+				{
+					desc:         "issued invoice",
+					file:         "get-item-issued-invoice.json",
+					id:           "170bf55e-ca81-4a17-99ad-54f6411d610c",
+					hasIssueDate: true,
+					nItems:       1,
+					status:       int(invoice.Issued),
+				},
 			}
 			for _, tC := range testCases {
 				t.Run(tC.desc, func(t *testing.T) {
