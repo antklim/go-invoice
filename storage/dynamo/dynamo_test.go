@@ -1,6 +1,9 @@
 package dynamo_test
 
 import (
+	"encoding/json"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/antklim/go-invoice/invoice"
@@ -47,39 +50,92 @@ func TestInvoiceMarshalUnmarshal(t *testing.T) {
 		}
 
 		{
-			// TODO: unmarshal invoice with item (read value from json test data)
+			testDataDir := "../../test/data"
+			testCases := []struct {
+				desc         string
+				file         string
+				id           string
+				hasIssueDate bool
+				nItems       int
+				status       int
+			}{
+				{
+					desc:   "open invoice",
+					file:   "get-item-open-invoice.json",
+					id:     "170bf55e-ca81-4a17-99ad-54f6411d610b",
+					nItems: 0,
+					status: int(invoice.Open),
+				},
+			}
+			for _, tC := range testCases {
+				t.Run(tC.desc, func(t *testing.T) {
+					testData, err := os.Open(path.Join(testDataDir, tC.file))
+					if err != nil {
+						t.Fatalf("failed to open test data: %v", err)
+					}
+					defer testData.Close()
+
+					var output dynamodb.GetItemOutput
+					if err := json.NewDecoder(testData).Decode(&output); err != nil {
+						t.Fatalf("failed to Decode test data: %v", err)
+					}
+
+					dInv, err := dynamo.UnmarshalDinvoice(&output)
+					if err != nil {
+						t.Errorf("UnmarshalDinvoice(%v) failed: %v", output, err)
+					}
+
+					if dInv.ID != tC.id {
+						t.Errorf("invalid dInv.ID %q, want %q", dInv.ID, tC.id)
+					}
+
+					if dInv.Status != tC.status {
+						t.Errorf("invalid dInv.Status %d, want %d", dInv.Status, tC.status)
+					}
+
+					if tC.hasIssueDate && dInv.Date == nil {
+						t.Error("dInv.Date should be defined")
+					}
+
+					if !tC.hasIssueDate && dInv.Date != nil {
+						t.Errorf("invalid dInv.Date %v, want nil", dInv.Date)
+					}
+
+					if len(dInv.Items) != tC.nItems {
+						t.Errorf("invalid dInv.Items number %d, want %d", len(dInv.Items), tC.nItems)
+					}
+				})
+			}
 		}
 	})
 }
 
 func TestAddInvoice(t *testing.T) {
-	t.Run("called with correct input", func(t *testing.T) {
-		client := mocks.NewDynamoAPI()
-		strg := dynamo.New(client, "invoices")
-		inv := invoice.NewInvoice("123", "customer")
+	client := mocks.NewDynamoAPI()
+	strg := dynamo.New(client, "invoices")
+	inv := invoice.NewInvoice("123", "customer")
 
-		if err := strg.AddInvoice(inv); err != nil {
-			t.Errorf("AddInvoice(%v) failed: %v", inv, err)
-		}
+	if err := strg.AddInvoice(inv); err != nil {
+		t.Errorf("AddInvoice(%v) failed: %v", inv, err)
+	}
 
-		if got, want := client.CalledTimes("PutItem"), 1; got != want {
-			t.Errorf("client.PutItem() called %d times, want %d call(s)", got, want)
-		}
+	if got, want := client.CalledTimes("PutItem"), 1; got != want {
+		t.Errorf("client.PutItem() called %d times, want %d call(s)", got, want)
+	}
 
-		ncall := 1
-		input := client.NthCall("PutItem", ncall)
-		if input == nil {
-			t.Fatalf("input of PutItem call #%d is nil", ncall)
-		}
+	ncall := 1
+	input := client.NthCall("PutItem", ncall)
+	if input == nil {
+		t.Fatalf("input of PutItem call #%d is nil", ncall)
+	}
 
-		dinput, ok := input.(*dynamodb.PutItemInput)
-		if !ok {
-			t.Errorf("type of PutItem input is %T, want *dynamodb.PutItemInput", input)
-		}
+	dinput, ok := input.(*dynamodb.PutItemInput)
+	if !ok {
+		t.Errorf("type of PutItem input is %T, want *dynamodb.PutItemInput", input)
+	}
 
-		testPutItemInput(t, inv, dinput)
-		testAddItemConditionExression(t, inv.ID, dinput)
-	})
+	testPutItemInput(t, inv, dinput)
+	testAddItemConditionExression(t, inv.ID, dinput)
 }
 
 func TestFindInvoice(t *testing.T) {
