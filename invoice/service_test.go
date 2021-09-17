@@ -385,7 +385,24 @@ func TestDeleteInvoiceItem(t *testing.T) {
 	})
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
-		// TODO: implement
+		e := errors.New("storage failed to update invoice")
+
+		nitems := 2
+		inv, _ := invoiceAPI.CreateInvoiceWithNItems(nitems)
+		itemID := inv.Items[0].ID
+
+		strg := mocks.NewStorage(
+			mocks.WithFoundInvoice(&inv),
+			mocks.WithUpdateInvoiceError(e))
+		srv := invoice.New(strg)
+
+		err := srv.DeleteInvoiceItem(inv.ID, itemID)
+		if err == nil {
+			t.Fatalf("expected DeleteInvoiceItem(%q, %q) to fail due to storage error", inv.ID, itemID)
+		}
+		if got, want := err.Error(), fmt.Sprintf("update invoice %q failed: %s", inv.ID, e.Error()); got != want {
+			t.Errorf("DeleteInvoiceItem(%q, %q) failed with: %s, want %s", inv.ID, itemID, got, want)
+		}
 	})
 
 	t.Run("successfully deletes invoice item", func(t *testing.T) {
