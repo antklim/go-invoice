@@ -1,7 +1,6 @@
 package invoice_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/antklim/go-invoice/invoice"
@@ -30,24 +29,19 @@ func TestAddInvoiceFails(t *testing.T) {
 }
 
 func TestFindInvoice(t *testing.T) {
-	// TODO: implement
-	t.Skip("not implemented")
+	t.Run("returns nil invoice when no invoices found", func(t *testing.T) {
+		f := new(storage.Memory)
+		strg := f.MakeStorage()
 
-	desc := "returns nil invoice"
-	testCases := []struct {
-		when string
-	}{
-		{
-			when: "when storage operation fails",
-		},
-		{
-			when: "when no invoices found",
-		},
-	}
-	for _, tC := range testCases {
-		t.Run(fmt.Sprintf("%s %s", desc, tC.when), func(t *testing.T) {
-		})
-	}
+		invID := "123"
+		inv, err := strg.FindInvoice(invID)
+		if err != nil {
+			t.Errorf("FindInvoice(%q) failed: %v", invID, err)
+		}
+		if inv != nil {
+			t.Errorf("FindInvoice(%q) no invoice expected, got %v", invID, inv)
+		}
+	})
 }
 
 func TestUpdateInvoiceFails(t *testing.T) {

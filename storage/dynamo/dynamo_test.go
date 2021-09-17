@@ -171,6 +171,9 @@ func TestFindInvoice(t *testing.T) {
 	}
 
 	testGetItemInput(t, invID, dinput)
+
+	// TODO: add client failure test
+	// TODO: add test when client returns data
 }
 
 func TestUpdateInvoice(t *testing.T) {
