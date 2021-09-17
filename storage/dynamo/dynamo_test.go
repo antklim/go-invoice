@@ -2,6 +2,7 @@ package dynamo_test
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path"
 	"testing"
@@ -147,33 +148,45 @@ func TestAddInvoice(t *testing.T) {
 }
 
 func TestFindInvoice(t *testing.T) {
-	client := mocks.NewDynamoAPI()
-	strg := dynamo.New(client, "invoices")
-	invID := "123"
+	t.Run("builds correct DynamoDB input", func(t *testing.T) {
+		client := mocks.NewDynamoAPI()
+		strg := dynamo.New(client, "invoices")
+		invID := "123"
 
-	if _, err := strg.FindInvoice(invID); err != nil {
-		t.Errorf("FindInvoice(%q) failed: %v", invID, err)
-	}
+		if _, err := strg.FindInvoice(invID); err != nil {
+			t.Errorf("FindInvoice(%q) failed: %v", invID, err)
+		}
 
-	if got, want := client.CalledTimes("GetItem"), 1; got != want {
-		t.Errorf("client.GetItem() called %d times, want %d call(s)", got, want)
-	}
+		if got, want := client.CalledTimes("GetItem"), 1; got != want {
+			t.Errorf("client.GetItem() called %d times, want %d call(s)", got, want)
+		}
 
-	ncall := 1
-	input := client.NthCall("GetItem", ncall)
-	if input == nil {
-		t.Fatalf("input of GetItem call #%d is nil", ncall)
-	}
+		ncall := 1
+		input := client.NthCall("GetItem", ncall)
+		if input == nil {
+			t.Fatalf("input of GetItem call #%d is nil", ncall)
+		}
 
-	dinput, ok := input.(*dynamodb.GetItemInput)
-	if !ok {
-		t.Errorf("type of GetItem input is %T, want *dynamodb.GetItemInput", input)
-	}
+		dinput, ok := input.(*dynamodb.GetItemInput)
+		if !ok {
+			t.Errorf("type of GetItem input is %T, want *dynamodb.GetItemInput", input)
+		}
 
-	testGetItemInput(t, invID, dinput)
+		testGetItemInput(t, invID, dinput)
+	})
 
-	// TODO: add client failure test
-	// TODO: add test when client returns data
+	t.Run("handles DynamoDB errors", func(t *testing.T) {
+		client := mocks.NewDynamoAPI(mocks.WithGetItemError(errors.New("DynamoDB GetItem failed")))
+		strg := dynamo.New(client, "invoices")
+		invID := "123"
+
+		_, err := strg.FindInvoice(invID)
+		if err == nil {
+			t.Errorf("expected FindInvoice(%q) to fail", invID)
+		} else if got, want := err.Error(), `DynamoDB GetItem failed`; got != want {
+			t.Errorf("FindInvoice(%q) = %v, want %v", invID, got, want)
+		}
+	})
 }
 
 func TestUpdateInvoice(t *testing.T) {

@@ -36,10 +36,17 @@ type DynamoAPI struct {
 }
 
 func NewDynamoAPI(opts ...DynamoAPIOption) *DynamoAPI {
-	return &DynamoAPI{
+	api := &DynamoAPI{
+		errors:     make(map[dynamoOp]error),
 		callsTimes: make(map[dynamoOp]int),
 		callsArgs:  make(map[dynamoOp][]interface{}),
 	}
+
+	for _, o := range opts {
+		o.apply(api)
+	}
+
+	return api
 }
 
 var _ dynamo.API = (*DynamoAPI)(nil)
@@ -102,4 +109,30 @@ func (api *DynamoAPI) recordGetItemCall(input *dynamodb.GetItemInput) {
 	api.callsArgs[getItem] = append(api.callsArgs[getItem], input)
 }
 
-type DynamoAPIOption func(*DynamoAPI)
+type DynamoAPIOption interface {
+	apply(*DynamoAPI)
+}
+
+type funcDynamoAPIOption struct {
+	f func(*DynamoAPI)
+}
+
+func (fdo *funcDynamoAPIOption) apply(api *DynamoAPI) {
+	fdo.f(api)
+}
+
+func newFuncDynamoAPIOption(f func(*DynamoAPI)) DynamoAPIOption {
+	return &funcDynamoAPIOption{f: f}
+}
+
+func WithGetItemError(err error) DynamoAPIOption {
+	return newFuncDynamoAPIOption(func(api *DynamoAPI) {
+		api.errors[getItem] = err
+	})
+}
+
+func WithPutItemError(err error) DynamoAPIOption {
+	return newFuncDynamoAPIOption(func(api *DynamoAPI) {
+		api.errors[putItem] = err
+	})
+}

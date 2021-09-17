@@ -53,14 +53,14 @@ type StorageOption interface {
 }
 
 type funcStorageOption struct {
-	f func(strg *Storage)
+	f func(*Storage)
 }
 
 func (fso *funcStorageOption) apply(strg *Storage) {
 	fso.f(strg)
 }
 
-func newFuncStorageOption(f func(strg *Storage)) StorageOption {
+func newFuncStorageOption(f func(*Storage)) StorageOption {
 	return &funcStorageOption{f: f}
 }
 
