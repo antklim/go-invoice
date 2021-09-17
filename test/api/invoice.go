@@ -34,7 +34,7 @@ func NewIvoiceAPI(strg invoice.Storage) *Invoice {
 //		testapi.WithCustomerName("John Wick"),
 //		testapi.WithStatus(invoice.Paid))
 //
-func (api *Invoice) CreateInvoice(opts ...InvoiceOptions) (invoice.Invoice, error) {
+func (api *Invoice) CreateInvoice(opts ...InvoiceOption) (invoice.Invoice, error) {
 	inv := defaultInvoice()
 
 	for _, o := range opts {
@@ -64,7 +64,7 @@ func (api *Invoice) CreateInvoicesWithStatuses(statuses ...invoice.Status) ([]in
 // CreateInvoiceWithNItems generates and stores invoice with n items. It returns
 // created invoice or any error occurred. In error case an empty invoice
 // returned.
-func (api *Invoice) CreateInvoiceWithNItems(n int, opts ...InvoiceOptions) (invoice.Invoice, error) {
+func (api *Invoice) CreateInvoiceWithNItems(n int, opts ...InvoiceOption) (invoice.Invoice, error) {
 	items := make([]invoice.Item, 0, n)
 	for i := 0; i < n; i++ {
 		items = append(items, ItemFactory())
@@ -89,60 +89,60 @@ func defaultInvoice() invoice.Invoice {
 	}
 }
 
-type InvoiceOptions interface {
+type InvoiceOption interface {
 	apply(*invoice.Invoice)
 }
 
-type funcInvoiceOptions struct {
+type funcInvoiceOption struct {
 	f func(*invoice.Invoice)
 }
 
-func (fio *funcInvoiceOptions) apply(inv *invoice.Invoice) {
+func (fio *funcInvoiceOption) apply(inv *invoice.Invoice) {
 	fio.f(inv)
 }
 
-func newFuncInvoiceOptions(f func(*invoice.Invoice)) InvoiceOptions {
-	return &funcInvoiceOptions{f: f}
+func newFuncInvoiceOption(f func(*invoice.Invoice)) InvoiceOption {
+	return &funcInvoiceOption{f: f}
 }
 
-func WithID(id string) InvoiceOptions {
-	return newFuncInvoiceOptions(func(inv *invoice.Invoice) {
+func WithID(id string) InvoiceOption {
+	return newFuncInvoiceOption(func(inv *invoice.Invoice) {
 		inv.ID = id
 	})
 }
 
-func WithCustomerName(cn string) InvoiceOptions {
-	return newFuncInvoiceOptions(func(inv *invoice.Invoice) {
+func WithCustomerName(cn string) InvoiceOption {
+	return newFuncInvoiceOption(func(inv *invoice.Invoice) {
 		inv.CustomerName = cn
 	})
 }
 
-func WithIssueaDate(date *time.Time) InvoiceOptions {
-	return newFuncInvoiceOptions(func(inv *invoice.Invoice) {
+func WithIssueaDate(date *time.Time) InvoiceOption {
+	return newFuncInvoiceOption(func(inv *invoice.Invoice) {
 		inv.Date = date
 	})
 }
 
-func WithStatus(status invoice.Status) InvoiceOptions {
-	return newFuncInvoiceOptions(func(inv *invoice.Invoice) {
+func WithStatus(status invoice.Status) InvoiceOption {
+	return newFuncInvoiceOption(func(inv *invoice.Invoice) {
 		inv.Status = status
 	})
 }
 
-func WithItems(items ...invoice.Item) InvoiceOptions {
-	return newFuncInvoiceOptions(func(inv *invoice.Invoice) {
+func WithItems(items ...invoice.Item) InvoiceOption {
+	return newFuncInvoiceOption(func(inv *invoice.Invoice) {
 		inv.Items = items
 	})
 }
 
-func WithCreatedAt(date time.Time) InvoiceOptions {
-	return newFuncInvoiceOptions(func(inv *invoice.Invoice) {
+func WithCreatedAt(date time.Time) InvoiceOption {
+	return newFuncInvoiceOption(func(inv *invoice.Invoice) {
 		inv.CreatedAt = date
 	})
 }
 
-func WithUpdatedAt(date time.Time) InvoiceOptions {
-	return newFuncInvoiceOptions(func(inv *invoice.Invoice) {
+func WithUpdatedAt(date time.Time) InvoiceOption {
+	return newFuncInvoiceOption(func(inv *invoice.Invoice) {
 		inv.UpdatedAt = date
 	})
 }

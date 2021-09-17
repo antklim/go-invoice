@@ -18,7 +18,7 @@ type Storage struct {
 	foundInvoice *invoice.Invoice
 }
 
-func NewStorage(opts ...StorageOptions) *Storage {
+func NewStorage(opts ...StorageOption) *Storage {
 	strg := &Storage{
 		errors: make(map[memoryOp]error),
 	}
@@ -48,42 +48,42 @@ func (strg *Storage) UpdateInvoice(inv invoice.Invoice) error {
 
 var _ invoice.Storage = (*Storage)(nil)
 
-type StorageOptions interface {
+type StorageOption interface {
 	apply(*Storage)
 }
 
-type funcStorageOptions struct {
+type funcStorageOption struct {
 	f func(strg *Storage)
 }
 
-func (fso *funcStorageOptions) apply(strg *Storage) {
+func (fso *funcStorageOption) apply(strg *Storage) {
 	fso.f(strg)
 }
 
-func newFuncStorageOptions(f func(strg *Storage)) StorageOptions {
-	return &funcStorageOptions{f: f}
+func newFuncStorageOption(f func(strg *Storage)) StorageOption {
+	return &funcStorageOption{f: f}
 }
 
-func WithAddInvoiceError(err error) StorageOptions {
-	return newFuncStorageOptions(func(strg *Storage) {
+func WithAddInvoiceError(err error) StorageOption {
+	return newFuncStorageOption(func(strg *Storage) {
 		strg.errors[addInvoice] = err
 	})
 }
 
-func WithFindInvoiceError(err error) StorageOptions {
-	return newFuncStorageOptions(func(strg *Storage) {
+func WithFindInvoiceError(err error) StorageOption {
+	return newFuncStorageOption(func(strg *Storage) {
 		strg.errors[findInvoice] = err
 	})
 }
 
-func WithUpdateInvoiceError(err error) StorageOptions {
-	return newFuncStorageOptions(func(strg *Storage) {
+func WithUpdateInvoiceError(err error) StorageOption {
+	return newFuncStorageOption(func(strg *Storage) {
 		strg.errors[updateInvoice] = err
 	})
 }
 
-func WithFoundInvoice(inv *invoice.Invoice) StorageOptions {
-	return newFuncStorageOptions(func(strg *Storage) {
+func WithFoundInvoice(inv *invoice.Invoice) StorageOption {
+	return newFuncStorageOption(func(strg *Storage) {
 		strg.foundInvoice = inv
 	})
 }

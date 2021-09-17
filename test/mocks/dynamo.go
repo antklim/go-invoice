@@ -35,7 +35,7 @@ type DynamoAPI struct {
 	callsArgs    map[dynamoOp][]interface{}
 }
 
-func NewDynamoAPI() *DynamoAPI {
+func NewDynamoAPI(opts ...DynamoAPIOption) *DynamoAPI {
 	return &DynamoAPI{
 		callsTimes: make(map[dynamoOp]int),
 		callsArgs:  make(map[dynamoOp][]interface{}),
@@ -101,3 +101,5 @@ func (api *DynamoAPI) recordGetItemCall(input *dynamodb.GetItemInput) {
 	api.callsTimes[getItem]++
 	api.callsArgs[getItem] = append(api.callsArgs[getItem], input)
 }
+
+type DynamoAPIOption func(*DynamoAPI)
