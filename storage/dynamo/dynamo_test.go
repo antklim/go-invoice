@@ -147,6 +147,19 @@ func TestAddInvoice(t *testing.T) {
 		testPutItemInput(t, inv, dinput)
 		testAddItemConditionExression(t, inv.ID, dinput)
 	})
+
+	t.Run("handles DynamoDB errors", func(t *testing.T) {
+		client := mocks.NewDynamoAPI(mocks.WithPutItemError(errors.New("DynamoDB PutItem failed")))
+		strg := dynamo.New(client, "invoices")
+		inv := invoice.NewInvoice("123", "customer")
+
+		err := strg.AddInvoice(inv)
+		if err == nil {
+			t.Errorf("expected AddInvoice(%v) to fail", inv)
+		} else if got, want := err.Error(), `DynamoDB PutItem failed`; got != want {
+			t.Errorf("AddInvoice(%v) = %v, want %v", inv, got, want)
+		}
+	})
 }
 
 func TestFindInvoice(t *testing.T) {
@@ -218,5 +231,18 @@ func TestUpdateInvoice(t *testing.T) {
 
 		testPutItemInput(t, inv, dinput)
 		testUpdateItemConditionExression(t, inv.ID, dinput)
+	})
+
+	t.Run("handles DynamoDB errors", func(t *testing.T) {
+		client := mocks.NewDynamoAPI(mocks.WithPutItemError(errors.New("DynamoDB PutItem failed")))
+		strg := dynamo.New(client, "invoices")
+		inv := invoice.NewInvoice("123", "customer")
+
+		err := strg.UpdateInvoice(inv)
+		if err == nil {
+			t.Errorf("expected UpdateInvoice(%v) to fail", inv)
+		} else if got, want := err.Error(), `DynamoDB PutItem failed`; got != want {
+			t.Errorf("UpdateInvoice(%v) = %v, want %v", inv, got, want)
+		}
 	})
 }
