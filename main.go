@@ -1,40 +1,45 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-
-	"github.com/c-bata/go-prompt"
+	"os"
 )
 
-func completer(d prompt.Document) []prompt.Suggest {
-	s := []prompt.Suggest{
-		{Text: "create", Description: "Create new invoice"},
-		{Text: "view", Description: "View invoice."},
-		{Text: "issue", Description: "Issue invoice."},
-		{Text: "pay", Description: "Pay invoice."},
-		{Text: "cancel", Description: "Cancel invoice."},
-		{Text: "update-customer", Description: "Update invoice customer."},
-		{Text: "add-item", Description: "Add invoice item."},
-		{Text: "delete-item", Description: "Delete invoice item."},
-		{Text: "exit", Description: "Exit go-invoice."},
-	}
-	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
+// TODO: start runner in a separate go-routine to handle user input without
+// blocking main routine. Add separate channels to handle user commands errors
+// and OS signals, like SIGTERM.
+
+var commands = [][2]string{
+	{"create", "Create new invoice"},
+	{"view", "View invoice."},
+	{"issue", "Issue invoice."},
+	{"pay", "Pay invoice."},
+	{"cancel", "Cancel invoice."},
+	{"update-customer", "Update invoice customer."},
+	{"add-item", "Add invoice item."},
+	{"delete-item", "Delete invoice item."},
+	{"exit", "Exit go-invoice."},
 }
 
-func executor(in string) {
-	fmt.Println("user entered", in)
+func runner() {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Fprint(os.Stdout, ">>> ")
+	cmdString, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+	fmt.Fprintln(os.Stdout, "you entered ", cmdString)
 }
 
 func main() {
 	fmt.Println("go-invoice - track your invoices easy.")
+	fmt.Println("Please use `help` to show available commands.")
 	fmt.Println("Please use `exit` or `Ctrl-D` to exit this program.")
+	fmt.Println("available commands:")
+	for _, cmd := range commands {
+		fmt.Printf("command: %s,\tdescription: %s\n", cmd[0], cmd[1])
+	}
 	defer fmt.Println("Bye!")
-	p := prompt.New(
-		executor,
-		completer,
-		prompt.OptionTitle("go-invoice-prompt: interactive invoices client"),
-		prompt.OptionPrefix(">>> "),
-		prompt.OptionInputTextColor(prompt.Blue),
-	)
-	p.Run()
+	runner()
 }
