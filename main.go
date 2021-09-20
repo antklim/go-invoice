@@ -18,19 +18,23 @@ var commands = [][2]string{
 	{"issue", "Issue invoice."},
 	{"pay", "Pay invoice."},
 	{"cancel", "Cancel invoice."},
-	{"update-customer", "Update invoice customer."},
 	{"add-item", "Add invoice item."},
 	{"delete-item", "Delete invoice item."},
+	{"update-customer", "Update invoice customer."},
+	{"help", "Print this help message."},
 	{"exit", "Exit go-invoice."},
 }
 
 func runner(exit chan<- struct{}) {
 	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Printf("> ")
 	for scanner.Scan() {
-		input := scanner.Text()
-		if input == "exit" {
+		switch input := scanner.Text(); {
+		case input == "exit":
 			exit <- struct{}{}
+			return
 		}
+		fmt.Printf("> ")
 	}
 }
 
@@ -46,7 +50,7 @@ func main() {
 
 	select {
 	case <-osSignals:
-		fmt.Println("received system signal")
+		fmt.Println("\nreceived system signal")
 	case <-exit:
 		fmt.Println(`received "exit" command`)
 	}
