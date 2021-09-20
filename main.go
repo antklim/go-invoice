@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 // TODO: start runner in a separate go-routine to handle user input without
@@ -22,24 +24,30 @@ var commands = [][2]string{
 	{"exit", "Exit go-invoice."},
 }
 
-func runner() {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Fprint(os.Stdout, ">>> ")
-	cmdString, err := reader.ReadString('\n')
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+func runner(exit chan<- struct{}) {
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		input := scanner.Text()
+		if input == "exit" {
+			exit <- struct{}{}
+		}
 	}
-	fmt.Fprintln(os.Stdout, "you entered ", cmdString)
 }
 
 func main() {
-	fmt.Println("go-invoice - track your invoices easy.")
-	fmt.Println("Please use `help` to show available commands.")
-	fmt.Println("Please use `exit` or `Ctrl-D` to exit this program.")
-	fmt.Println("available commands:")
-	for _, cmd := range commands {
-		fmt.Printf("command: %s,\tdescription: %s\n", cmd[0], cmd[1])
+	fmt.Println("Welcome to go-invoice.")
+	fmt.Println(`Type "help" for more information.`)
+
+	exit := make(chan struct{}, 1)
+	osSignals := make(chan os.Signal, 1)
+	signal.Notify(osSignals, syscall.SIGINT, syscall.SIGTERM)
+
+	go runner(exit)
+
+	select {
+	case <-osSignals:
+		fmt.Println("received system signal")
+	case <-exit:
+		fmt.Println(`received "exit" command`)
 	}
-	defer fmt.Println("Bye!")
-	runner()
 }
