@@ -12,7 +12,10 @@ const (
 	help       = "help"
 	exit       = "exit"
 
-	defaultPrompt = "> "
+	defaultPrompt  = "> "
+	defaultNameDlm = " " // a delimeter between command name and arguments
+	defaultArgsDlm = "," // a delimeter between arguments
+	commandParts   = 2   // a number of parte to split a command input
 )
 
 var reservedCommands = map[string]struct{}{
@@ -80,8 +83,8 @@ func (cli *Cli) Run() {
 
 	scanner := bufio.NewScanner(cli.src)
 	for scanner.Scan() {
-		input := strings.Split(scanner.Text(), " ")
-		name, args := input[0], input[1:]
+		input := strings.SplitN(scanner.Text(), defaultNameDlm, commandParts)
+		name := input[0]
 
 		switch name {
 		case exit:
@@ -91,6 +94,10 @@ func (cli *Cli) Run() {
 			cli.help()
 		default:
 			if cmd, ok := cli.commands[name]; ok {
+				var args []string
+				if len(input) == commandParts {
+					args = strings.Split(input[1], defaultArgsDlm)
+				}
 				cmd.runner.Run(cli.dst, args...)
 			} else {
 				cli.unknownCommand(name)
