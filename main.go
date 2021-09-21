@@ -25,7 +25,7 @@ func initCli(exit chan<- struct{}, svc *invoice.Service) *cli.Cli {
 	c := cli.NewCli(os.Stdin, os.Stdout, exit)
 	c.Handle("create", "Create new invoice", createHandler(svc))
 	c.Handle("view", "View invoice.", viewHandler(svc))
-	// c.Handle("issue", "Issue invoice.", nil)
+	c.Handle("issue", "Issue invoice.", issueHandler(svc))
 	// c.Handle("pay", "Pay invoice.", nil)
 	// c.Handle("cancel", "Cancel invoice.", nil)
 	// c.Handle("add-item", "Add invoice item.", nil)
@@ -96,5 +96,23 @@ func viewHandler(svc *invoice.Service) cli.RunnerFunc {
 		}
 
 		fmt.Fprintf(out, "%#v\n", inv)
+	}
+}
+
+func issueHandler(svc *invoice.Service) cli.RunnerFunc {
+	return func(out io.Writer, args ...string) {
+		if len(args) == 0 || args[0] == "" {
+			fmt.Fprintf(out, "issue invoice failed: missing invoice ID\n")
+			return
+		}
+
+		invID := args[0]
+		err := svc.IssueInvoice(invID)
+		if err != nil {
+			fmt.Fprintf(out, "issue invoice failed: %v\n", err)
+			return
+		}
+
+		fmt.Fprintf(out, "%q invoice successfully issued\n", invID)
 	}
 }
