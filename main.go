@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/antklim/go-invoice/cli"
@@ -30,7 +31,7 @@ func initCli(exit chan<- struct{}, svc *invoice.Service) *cli.Cli {
 	c.Handle("cancel", "Cancel invoice.", cancelHandler(svc))
 	// c.Handle("add-item", "Add invoice item.", nil)
 	// c.Handle("delete-item", "Delete invoice item.", nil)
-	// c.Handle("update-customer", "Update invoice customer.", nil)
+	c.Handle("update-customer", "Update invoice customer.", updateCustomerHandler(svc))
 	return c
 }
 
@@ -150,5 +151,23 @@ func cancelHandler(svc *invoice.Service) cli.RunnerFunc {
 		}
 
 		fmt.Fprintf(out, "%q invoice successfully canceled\n", invID)
+	}
+}
+
+func updateCustomerHandler(svc *invoice.Service) cli.RunnerFunc {
+	return func(out io.Writer, args ...string) {
+		if len(args) < 2 || args[0] == "" || args[1] == "" {
+			fmt.Fprintf(out, "update invoice customer failed: missing invoice ID and/or customer name\n")
+			return
+		}
+
+		invID, name := args[0], strings.TrimSpace(args[1])
+		err := svc.UpdateInvoiceCustomer(invID, name)
+		if err != nil {
+			fmt.Fprintf(out, "update invoice customer failed: %v\n", err)
+			return
+		}
+
+		fmt.Fprintf(out, "%q invoice customer successfully updated\n", invID)
 	}
 }
