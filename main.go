@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"os/signal"
@@ -14,19 +13,17 @@ import (
 // blocking main routine. Add separate channels to handle user commands errors
 // and OS signals, like SIGTERM.
 
-func runner(exit chan<- struct{}) {
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Printf("> ")
-	for scanner.Scan() {
-		switch input := scanner.Text(); {
-		case input == "exit":
-			exit <- struct{}{}
-			return
-		case input == "help":
-			cli.HelpCmd()
-		}
-		fmt.Printf("> ")
-	}
+func initCli(exit chan<- struct{}) *cli.Cli {
+	c := cli.NewCli(os.Stdin, exit)
+	c.Handle("create", "Create new invoice", nil)
+	c.Handle("view", "View invoice.", nil)
+	c.Handle("issue", "Issue invoice.", nil)
+	c.Handle("pay", "Pay invoice.", nil)
+	c.Handle("cancel", "Cancel invoice.", nil)
+	c.Handle("add-item", "Add invoice item.", nil)
+	c.Handle("delete-item", "Delete invoice item.", nil)
+	c.Handle("update-customer", "Update invoice customer.", nil)
+	return c
 }
 
 func main() {
@@ -37,7 +34,8 @@ func main() {
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, syscall.SIGINT, syscall.SIGTERM)
 
-	go runner(exit)
+	c := initCli(exit)
+	go c.Run()
 
 	select {
 	case <-osSignals:

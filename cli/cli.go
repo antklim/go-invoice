@@ -1,13 +1,23 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 )
 
 const (
 	helpFormat = "%-25s%s\n"
+	help       = "help"
+	exit       = "exit"
+
+	defaultPrompt = "> "
 )
+
+var reservedCommands = map[string]struct{}{
+	help: {},
+	exit: {},
+}
 
 type Runner interface {
 	Run(io.Writer)
@@ -19,48 +29,15 @@ type command struct {
 	runner Runner
 }
 
-var orderedCommands = []string{
-	"create",
-	"view",
-	"issue",
-	"pay",
-	"cancel",
-	"add-item",
-	"delete-item",
-	"update-customer",
-	"help",
-	"exit",
-}
-
-var commands = map[string]command{
-	"create":          {name: "create", desc: "Create new invoice"},
-	"view":            {name: "view", desc: "View invoice."},
-	"issue":           {name: "issue", desc: "Issue invoice."},
-	"pay":             {name: "pay", desc: "Pay invoice."},
-	"cancel":          {name: "cancel", desc: "Cancel invoice."},
-	"add-item":        {name: "add-item", desc: "Add invoice item."},
-	"delete-item":     {name: "delete-item", desc: "Delete invoice item."},
-	"update-customer": {name: "update-customer", desc: "Update invoice customer."},
-	"help":            {name: "help", desc: "Print this help message."},
-	"exit":            {name: "exit", desc: "Exit go-invoice."},
-}
-
-func HelpCmd() {
-	for _, name := range orderedCommands {
-		if cmd, ok := commands[name]; ok {
-			fmt.Printf("%-25s%s\n", cmd.name, cmd.desc)
-		}
-	}
-}
-
 type Cli struct {
 	commands  map[string]command
 	scommands []command       // slice of commands sorted in order of registration
+	cmdSrc    io.Reader       // commands source
 	exit      chan<- struct{} // exit command notification channel
 }
 
-func NewCli(exit chan<- struct{}) *Cli {
-	return &Cli{exit: exit}
+func NewCli(r io.Reader, exit chan<- struct{}) *Cli {
+	return &Cli{cmdSrc: r, exit: exit}
 }
 
 // Handle registers the description and runner for the given command name.
@@ -71,11 +48,14 @@ func (cli *Cli) Handle(name, desc string, runner Runner) {
 	if desc == "" {
 		panic("cli: invalid command description")
 	}
-	if runner == nil {
-		panic("cli: nil runner")
-	}
+	// if runner == nil {
+	// 	panic("cli: nil runner")
+	// }
 	if _, exist := cli.commands[name]; exist {
 		panic("cli: multiple registrations for " + name)
+	}
+	if _, reserved := reservedCommands[name]; reserved {
+		panic("cli: " + name + " is a reserved command")
 	}
 
 	if cli.commands == nil {
@@ -86,14 +66,30 @@ func (cli *Cli) Handle(name, desc string, runner Runner) {
 	cli.scommands = append(cli.scommands, cmd)
 }
 
-func (cli *Cli) Help() {
+func (cli *Cli) Run() {
+	scanner := bufio.NewScanner(cli.cmdSrc)
+	cli.prompt()
+
+	for scanner.Scan() {
+		switch input := scanner.Text(); {
+		case input == exit:
+			cli.exit <- struct{}{}
+			return
+		case input == help:
+			cli.help()
+		}
+		cli.prompt()
+	}
+}
+
+func (cli *Cli) help() {
 	for _, cmd := range cli.scommands {
 		fmt.Printf(helpFormat, cmd.name, cmd.desc)
 	}
-	fmt.Printf(helpFormat, "help", "Print this help message.")
-	fmt.Printf(helpFormat, "exit", "Exit go-invoice.")
+	fmt.Printf(helpFormat, help, "Print this help message.")
+	fmt.Printf(helpFormat, exit, "Exit go-invoice.")
 }
 
-func (cli *Cli) Exit() {
-	cli.exit <- struct{}{}
+func (cli *Cli) prompt() {
+	fmt.Print(defaultPrompt)
 }
