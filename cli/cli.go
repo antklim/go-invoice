@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"strings"
 )
 
 const (
@@ -20,13 +21,13 @@ var reservedCommands = map[string]struct{}{
 }
 
 type Runner interface {
-	Run(io.Writer)
+	Run(io.Writer, ...string)
 }
 
-type RunnerFunc func(io.Writer)
+type RunnerFunc func(io.Writer, ...string)
 
-func (f RunnerFunc) Run(out io.Writer) {
-	f(out)
+func (f RunnerFunc) Run(out io.Writer, args ...string) {
+	f(out, args...)
 }
 
 type command struct {
@@ -55,9 +56,9 @@ func (cli *Cli) Handle(name, desc string, runner Runner) {
 	if desc == "" {
 		panic("cli: invalid command description")
 	}
-	// if runner == nil {
-	// 	panic("cli: nil runner")
-	// }
+	if runner == nil {
+		panic("cli: nil runner")
+	}
 	if _, exist := cli.commands[name]; exist {
 		panic("cli: multiple registrations for " + name)
 	}
@@ -79,17 +80,20 @@ func (cli *Cli) Run() {
 
 	scanner := bufio.NewScanner(cli.src)
 	for scanner.Scan() {
-		switch input := scanner.Text(); {
-		case input == exit:
+		input := strings.Split(scanner.Text(), " ")
+		name, args := input[0], input[1:]
+
+		switch name {
+		case exit:
 			cli.exit <- struct{}{}
 			return
-		case input == help:
+		case help:
 			cli.help()
 		default:
-			if cmd, ok := cli.commands[input]; ok {
-				cmd.runner.Run(cli.dst)
+			if cmd, ok := cli.commands[name]; ok {
+				cmd.runner.Run(cli.dst, args...)
 			} else {
-				cli.unknownCommand(input)
+				cli.unknownCommand(name)
 			}
 		}
 		cli.prompt()
