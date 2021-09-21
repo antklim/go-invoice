@@ -23,6 +23,12 @@ type Runner interface {
 	Run(io.Writer)
 }
 
+type RunnerFunc func(io.Writer)
+
+func (f RunnerFunc) Run(out io.Writer) {
+	f(out)
+}
+
 type command struct {
 	name   string
 	desc   string
