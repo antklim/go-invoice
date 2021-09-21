@@ -26,8 +26,8 @@ func initCli(exit chan<- struct{}, svc *invoice.Service) *cli.Cli {
 	c.Handle("create", "Create new invoice", createHandler(svc))
 	c.Handle("view", "View invoice.", viewHandler(svc))
 	c.Handle("issue", "Issue invoice.", issueHandler(svc))
-	// c.Handle("pay", "Pay invoice.", nil)
-	// c.Handle("cancel", "Cancel invoice.", nil)
+	c.Handle("pay", "Pay invoice.", payHandler(svc))
+	c.Handle("cancel", "Cancel invoice.", cancelHandler(svc))
 	// c.Handle("add-item", "Add invoice item.", nil)
 	// c.Handle("delete-item", "Delete invoice item.", nil)
 	// c.Handle("update-customer", "Update invoice customer.", nil)
@@ -114,5 +114,41 @@ func issueHandler(svc *invoice.Service) cli.RunnerFunc {
 		}
 
 		fmt.Fprintf(out, "%q invoice successfully issued\n", invID)
+	}
+}
+
+func payHandler(svc *invoice.Service) cli.RunnerFunc {
+	return func(out io.Writer, args ...string) {
+		if len(args) == 0 || args[0] == "" {
+			fmt.Fprintf(out, "pay invoice failed: missing invoice ID\n")
+			return
+		}
+
+		invID := args[0]
+		err := svc.PayInvoice(invID)
+		if err != nil {
+			fmt.Fprintf(out, "pay invoice failed: %v\n", err)
+			return
+		}
+
+		fmt.Fprintf(out, "%q invoice successfully paid\n", invID)
+	}
+}
+
+func cancelHandler(svc *invoice.Service) cli.RunnerFunc {
+	return func(out io.Writer, args ...string) {
+		if len(args) == 0 || args[0] == "" {
+			fmt.Fprintf(out, "cancel invoice failed: missing invoice ID\n")
+			return
+		}
+
+		invID := args[0]
+		err := svc.CancelInvoice(invID)
+		if err != nil {
+			fmt.Fprintf(out, "cancel invoice failed: %v\n", err)
+			return
+		}
+
+		fmt.Fprintf(out, "%q invoice successfully canceled\n", invID)
 	}
 }
