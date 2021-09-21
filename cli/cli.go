@@ -32,12 +32,13 @@ type command struct {
 type Cli struct {
 	commands  map[string]command
 	scommands []command       // slice of commands sorted in order of registration
-	cmdSrc    io.Reader       // commands source
+	src       io.Reader       // commands source
+	dst       io.Writer       // commands output destination
 	exit      chan<- struct{} // exit command notification channel
 }
 
-func NewCli(r io.Reader, exit chan<- struct{}) *Cli {
-	return &Cli{cmdSrc: r, exit: exit}
+func NewCli(src io.Reader, dst io.Writer, exit chan<- struct{}) *Cli {
+	return &Cli{src: src, dst: dst, exit: exit}
 }
 
 // Handle registers the description and runner for the given command name.
@@ -67,9 +68,10 @@ func (cli *Cli) Handle(name, desc string, runner Runner) {
 }
 
 func (cli *Cli) Run() {
-	scanner := bufio.NewScanner(cli.cmdSrc)
+	cli.helpPrompt()
 	cli.prompt()
 
+	scanner := bufio.NewScanner(cli.src)
 	for scanner.Scan() {
 		switch input := scanner.Text(); {
 		case input == exit:
@@ -77,6 +79,12 @@ func (cli *Cli) Run() {
 			return
 		case input == help:
 			cli.help()
+		default:
+			if cmd, ok := cli.commands[input]; ok {
+				cmd.runner.Run(cli.dst)
+			} else {
+				cli.unknownCommand(input)
+			}
 		}
 		cli.prompt()
 	}
@@ -84,12 +92,20 @@ func (cli *Cli) Run() {
 
 func (cli *Cli) help() {
 	for _, cmd := range cli.scommands {
-		fmt.Printf(helpFormat, cmd.name, cmd.desc)
+		fmt.Fprintf(cli.dst, helpFormat, cmd.name, cmd.desc)
 	}
-	fmt.Printf(helpFormat, help, "Print this help message.")
-	fmt.Printf(helpFormat, exit, "Exit go-invoice.")
+	fmt.Fprintf(cli.dst, helpFormat, help, "Print this help message.")
+	fmt.Fprintf(cli.dst, helpFormat, exit, "Exit go-invoice.")
 }
 
 func (cli *Cli) prompt() {
-	fmt.Print(defaultPrompt)
+	fmt.Fprint(cli.dst, defaultPrompt)
+}
+
+func (cli *Cli) helpPrompt() {
+	fmt.Fprintln(cli.dst, `Type "help" for more information.`)
+}
+
+func (cli *Cli) unknownCommand(name string) {
+	fmt.Fprintf(cli.dst, "Unknown command %q entered.\n", name)
 }

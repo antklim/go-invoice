@@ -14,7 +14,7 @@ import (
 // and OS signals, like SIGTERM.
 
 func initCli(exit chan<- struct{}) *cli.Cli {
-	c := cli.NewCli(os.Stdin, exit)
+	c := cli.NewCli(os.Stdin, os.Stdout, exit)
 	c.Handle("create", "Create new invoice", nil)
 	c.Handle("view", "View invoice.", nil)
 	c.Handle("issue", "Issue invoice.", nil)
@@ -28,7 +28,6 @@ func initCli(exit chan<- struct{}) *cli.Cli {
 
 func main() {
 	fmt.Println("Welcome to go-invoice.")
-	fmt.Println(`Type "help" for more information.`)
 
 	exit := make(chan struct{}, 1)
 	osSignals := make(chan os.Signal, 1)
