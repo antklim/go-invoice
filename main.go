@@ -175,13 +175,13 @@ func addItemHandler(svc *invoice.Service) cli.RunnerFunc {
 			return
 		}
 
-		err = svc.AddInvoiceItem(invID, productName, price, qty)
+		item, err := svc.AddInvoiceItem(invID, productName, price, qty)
 		if err != nil {
 			fmt.Fprintf(out, "add invoice item failed: %v\n", err)
 			return
 		}
 
-		fmt.Fprintf(out, "%q invoice item successfully added\n", invID)
+		fmt.Fprintf(out, "item %q successfully added to invoice %q\n", item.ID, invID)
 	}
 }
 

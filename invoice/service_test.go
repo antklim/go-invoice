@@ -235,7 +235,7 @@ func TestAddInvoiceItem(t *testing.T) {
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
-		err := srv.AddInvoiceItem(invID, "Pen", 123, 2)
+		_, err := srv.AddInvoiceItem(invID, "Pen", 123, 2)
 		if err == nil {
 			t.Fatalf("expected AddInvoiceItems(%q) to fail when invoice does not exist", invID)
 		}
@@ -252,7 +252,7 @@ func TestAddInvoiceItem(t *testing.T) {
 		}
 
 		for _, inv := range invoices {
-			err := srv.AddInvoiceItem(inv.ID, "Pen", 123, 2)
+			_, err := srv.AddInvoiceItem(inv.ID, "Pen", 123, 2)
 			if err == nil {
 				t.Fatalf("expected AddInvoiceItems(%q) to fail when invoice status is %q",
 					inv.ID, inv.Status)
@@ -271,7 +271,7 @@ func TestAddInvoiceItem(t *testing.T) {
 		srv := invoice.New(strg)
 
 		invID := uuid.Nil.String()
-		err := srv.AddInvoiceItem(invID, "Pen", 123, 2)
+		_, err := srv.AddInvoiceItem(invID, "Pen", 123, 2)
 		if err == nil {
 			t.Fatalf("expected AddInvoiceItems(%q) to fail due to storage error", invID)
 		}
@@ -288,7 +288,7 @@ func TestAddInvoiceItem(t *testing.T) {
 			mocks.WithUpdateInvoiceError(e))
 		srv := invoice.New(strg)
 
-		err := srv.AddInvoiceItem(inv.ID, "Pen", 123, 2)
+		_, err := srv.AddInvoiceItem(inv.ID, "Pen", 123, 2)
 		if err == nil {
 			t.Fatalf("expected AddInvoiceItems(%q) to fail due to storage error", inv.ID)
 		}
@@ -307,8 +307,32 @@ func TestAddInvoiceItem(t *testing.T) {
 		nitems := len(inv.Items)
 
 		// add item
-		if err := srv.AddInvoiceItem(inv.ID, "Pen", 123, 2); err != nil {
+		productName, price, qty := "Pen", 123, 2
+		item, err := srv.AddInvoiceItem(inv.ID, productName, price, qty)
+		if err != nil {
 			t.Fatalf("AddInvoiceItems(%q) failed: %v", inv.ID, err)
+		}
+
+		if item.ID == "" {
+			t.Error("item.ID should not be empty")
+		}
+
+		if item.ProductName != productName {
+			t.Errorf("invalid item.ProductName %q, want %q", item.ProductName, productName)
+		}
+
+		if item.Price != price {
+			t.Errorf("invalid item.Price %d, want %d", item.Price, price)
+		}
+
+		if item.Qty != qty {
+			t.Errorf("invalid item.Qty %d, want %d", item.Qty, qty)
+		}
+
+		if !item.CreatedAt.After(inv.CreatedAt) {
+			t.Errorf("item.CreatedAt = %s should be after invoice.CreatedAt = %s",
+				item.CreatedAt.Format(time.RFC3339Nano),
+				inv.CreatedAt.Format(time.RFC3339Nano))
 		}
 
 		// validate that item added
