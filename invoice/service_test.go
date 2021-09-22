@@ -235,13 +235,12 @@ func TestAddInvoiceItem(t *testing.T) {
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
-		item := testapi.ItemFactory()
-		err := srv.AddInvoiceItem(invID, item)
+		err := srv.AddInvoiceItem(invID, "Pen", 123, 2)
 		if err == nil {
-			t.Fatalf("expected AddInvoiceItems(%q, %v) to fail when invoice does not exist", invID, item)
+			t.Fatalf("expected AddInvoiceItems(%q) to fail when invoice does not exist", invID)
 		}
 		if got, want := err.Error(), fmt.Sprintf("invoice %q not found", invID); got != want {
-			t.Errorf("AddInvoiceItems(%q, %v) failed with: %s, want %s", invID, item, got, want)
+			t.Errorf("AddInvoiceItems(%q) failed with: %s, want %s", invID, got, want)
 		}
 	})
 
@@ -253,16 +252,15 @@ func TestAddInvoiceItem(t *testing.T) {
 		}
 
 		for _, inv := range invoices {
-			item := testapi.ItemFactory()
-			err := srv.AddInvoiceItem(inv.ID, item)
+			err := srv.AddInvoiceItem(inv.ID, "Pen", 123, 2)
 			if err == nil {
-				t.Fatalf("expected AddInvoiceItems(%q, %v) to fail when invoice status is %q",
-					inv.ID, item, inv.Status)
+				t.Fatalf("expected AddInvoiceItems(%q) to fail when invoice status is %q",
+					inv.ID, inv.Status)
 			}
 			got := err.Error()
 			want := fmt.Sprintf("item cannot be added to %q invoice", inv.Status)
 			if got != want {
-				t.Errorf("AddInvoiceItems(%q, %v) failed with: %s, want %s", inv.ID, item, got, want)
+				t.Errorf("AddInvoiceItems(%q) failed with: %s, want %s", inv.ID, got, want)
 			}
 		}
 	})
@@ -273,13 +271,12 @@ func TestAddInvoiceItem(t *testing.T) {
 		srv := invoice.New(strg)
 
 		invID := uuid.Nil.String()
-		item := testapi.ItemFactory()
-		err := srv.AddInvoiceItem(invID, item)
+		err := srv.AddInvoiceItem(invID, "Pen", 123, 2)
 		if err == nil {
-			t.Fatalf("expected AddInvoiceItems(%q, %v) to fail due to storage error", invID, item)
+			t.Fatalf("expected AddInvoiceItems(%q) to fail due to storage error", invID)
 		}
 		if got, want := err.Error(), fmt.Sprintf("find invoice %q failed: %s", invID, e.Error()); got != want {
-			t.Errorf("AddInvoiceItems(%q, %v) failed with: %s, want %s", invID, item, got, want)
+			t.Errorf("AddInvoiceItems(%q) failed with: %s, want %s", invID, got, want)
 		}
 	})
 
@@ -291,13 +288,12 @@ func TestAddInvoiceItem(t *testing.T) {
 			mocks.WithUpdateInvoiceError(e))
 		srv := invoice.New(strg)
 
-		item := testapi.ItemFactory()
-		err := srv.AddInvoiceItem(inv.ID, item)
+		err := srv.AddInvoiceItem(inv.ID, "Pen", 123, 2)
 		if err == nil {
-			t.Fatalf("expected AddInvoiceItems(%q, %v) to fail due to storage error", inv.ID, item)
+			t.Fatalf("expected AddInvoiceItems(%q) to fail due to storage error", inv.ID)
 		}
 		if got, want := err.Error(), fmt.Sprintf("update invoice %q failed: %s", inv.ID, e.Error()); got != want {
-			t.Errorf("AddInvoiceItems(%q, %v) failed with: %s, want %s", inv.ID, item, got, want)
+			t.Errorf("AddInvoiceItems(%q) failed with: %s, want %s", inv.ID, got, want)
 		}
 	})
 
@@ -311,9 +307,8 @@ func TestAddInvoiceItem(t *testing.T) {
 		nitems := len(inv.Items)
 
 		// add item
-		item := testapi.ItemFactory()
-		if err := srv.AddInvoiceItem(inv.ID, item); err != nil {
-			t.Fatalf("AddInvoiceItems(%q, %v) failed: %v", inv.ID, item, err)
+		if err := srv.AddInvoiceItem(inv.ID, "Pen", 123, 2); err != nil {
+			t.Fatalf("AddInvoiceItems(%q) failed: %v", inv.ID, err)
 		}
 
 		// validate that item added
@@ -335,14 +330,13 @@ func TestDeleteInvoiceItem(t *testing.T) {
 	srv, invoiceAPI := testSetup()
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
-		invID := uuid.Nil.String()
-		item := testapi.ItemFactory()
-		err := srv.DeleteInvoiceItem(invID, item.ID)
+		invID, itemID := uuid.Nil.String(), uuid.Nil.String()
+		err := srv.DeleteInvoiceItem(invID, itemID)
 		if err == nil {
-			t.Fatalf("expected DeleteInvoiceItem(%q, %q) to fail when invoice does not exist", invID, item.ID)
+			t.Fatalf("expected DeleteInvoiceItem(%q, %q) to fail when invoice does not exist", invID, itemID)
 		}
 		if got, want := err.Error(), fmt.Sprintf("invoice %q not found", invID); got != want {
-			t.Errorf("DeleteInvoiceItem(%q, %q) failed with: %s, want %s", invID, item.ID, got, want)
+			t.Errorf("DeleteInvoiceItem(%q, %q) failed with: %s, want %s", invID, itemID, got, want)
 		}
 	})
 
@@ -373,14 +367,13 @@ func TestDeleteInvoiceItem(t *testing.T) {
 		strg := mocks.NewStorage(mocks.WithFindInvoiceError(e))
 		srv := invoice.New(strg)
 
-		invID := uuid.Nil.String()
-		item := testapi.ItemFactory()
-		err := srv.DeleteInvoiceItem(invID, item.ID)
+		invID, itemID := uuid.Nil.String(), uuid.Nil.String()
+		err := srv.DeleteInvoiceItem(invID, itemID)
 		if err == nil {
-			t.Fatalf("expected DeleteInvoiceItem(%q, %q) to fail due to storage error", invID, item.ID)
+			t.Fatalf("expected DeleteInvoiceItem(%q, %q) to fail due to storage error", invID, itemID)
 		}
 		if got, want := err.Error(), fmt.Sprintf("find invoice %q failed: %s", invID, e.Error()); got != want {
-			t.Errorf("DeleteInvoiceItem(%q, %q) failed with: %s, want %s", invID, item.ID, got, want)
+			t.Errorf("DeleteInvoiceItem(%q, %q) failed with: %s, want %s", invID, itemID, got, want)
 		}
 	})
 

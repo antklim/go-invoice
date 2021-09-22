@@ -65,18 +65,19 @@ func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 // AddInvoiceItem adds invoice item to the invoice. If invoice not found
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Only invoices in "open" status are allowed to be updated.
-func (s *Service) AddInvoiceItem(id string, item Item) error {
-	inv, err := s.mustFindInvoice(id)
+func (s *Service) AddInvoiceItem(invID, productName string, price, qty uint) error {
+	inv, err := s.mustFindInvoice(invID)
 	if err != nil {
 		return err
 	}
 
+	item := NewItem(uuid.NewString(), productName, price, qty)
 	if err := inv.AddItem(item); err != nil {
 		return err
 	}
 
 	if err := s.strg.UpdateInvoice(*inv); err != nil {
-		return errors.Wrapf(err, errUpdateFailed, id)
+		return errors.Wrapf(err, errUpdateFailed, invID)
 	}
 
 	return nil
