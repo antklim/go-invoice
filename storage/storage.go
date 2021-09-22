@@ -19,6 +19,13 @@ type Dynamo struct {
 	table  string
 }
 
+func NewDynamo(client dynamo.API, table string) *Dynamo {
+	return &Dynamo{
+		client: client,
+		table:  table,
+	}
+}
+
 func (s *Dynamo) MakeStorage() invoice.Storage {
 	return dynamo.New(s.client, s.table)
 }

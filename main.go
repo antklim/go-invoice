@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -15,6 +16,19 @@ import (
 )
 
 // TODO: add integration tests
+
+var (
+	storageType string
+	tableName   string
+	awsEndpoint string
+)
+
+func initFlags() {
+	flag.StringVar(&storageType, "storage", "memory", "Storage to where to save invoices [memory|dynamo]")
+	flag.StringVar(&tableName, "table", "invoices", "Storage table name")
+	flag.StringVar(&awsEndpoint, "endpoint", "", "Custom AWS endpoint to connect to DynamoDB")
+	flag.Parse()
+}
 
 func initCli(exit chan<- struct{}, svc *invoice.Service) *cli.Cli {
 	if exit == nil {
@@ -37,12 +51,23 @@ func initCli(exit chan<- struct{}, svc *invoice.Service) *cli.Cli {
 }
 
 func initService() *invoice.Service {
-	f := new(storage.Memory)
+	var f invoice.StorageFactory
+	switch storageType {
+	case "memory":
+		f = new(storage.Memory)
+	case "dynamo":
+		f = storage.NewDynamo(nil, tableName)
+	default:
+		panic("svc: unknown storage " + storageType)
+	}
+
 	strg := f.MakeStorage()
 	return invoice.New(strg)
 }
 
 func main() {
+	initFlags()
+
 	fmt.Println("Welcome to go-invoice.")
 
 	exit := make(chan struct{}, 1)
