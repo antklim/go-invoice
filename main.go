@@ -31,7 +31,7 @@ func initCli(exit chan<- struct{}, svc *invoice.Service) *cli.Cli {
 	c.Handle("pay", "Pay invoice.", payHandler(svc))
 	c.Handle("cancel", "Cancel invoice.", cancelHandler(svc))
 	c.Handle("add-item", "Add invoice item.", addItemHandler(svc))
-	// c.Handle("delete-item", "Delete invoice item.", nil)
+	c.Handle("delete-item", "Delete invoice item.", deleteItemHandler(svc))
 	c.Handle("update-customer", "Update invoice customer.", updateCustomerHandler(svc))
 	return c
 }
@@ -69,7 +69,7 @@ func createHandler(svc *invoice.Service) cli.RunnerFunc {
 			return
 		}
 
-		inv, err := svc.CreateInvoice(args[0])
+		inv, err := svc.CreateInvoice(strings.TrimSpace(args[0]))
 		if err != nil {
 			fmt.Fprintf(out, "create invoice failed: %v\n", err)
 			return
@@ -86,7 +86,7 @@ func viewHandler(svc *invoice.Service) cli.RunnerFunc {
 			return
 		}
 
-		invID := args[0]
+		invID := strings.TrimSpace(args[0])
 		inv, err := svc.ViewInvoice(invID)
 		if err != nil {
 			fmt.Fprintf(out, "view invoice failed: %v\n", err)
@@ -108,7 +108,7 @@ func issueHandler(svc *invoice.Service) cli.RunnerFunc {
 			return
 		}
 
-		invID := args[0]
+		invID := strings.TrimSpace(args[0])
 		err := svc.IssueInvoice(invID)
 		if err != nil {
 			fmt.Fprintf(out, "issue invoice failed: %v\n", err)
@@ -126,7 +126,7 @@ func payHandler(svc *invoice.Service) cli.RunnerFunc {
 			return
 		}
 
-		invID := args[0]
+		invID := strings.TrimSpace(args[0])
 		err := svc.PayInvoice(invID)
 		if err != nil {
 			fmt.Fprintf(out, "pay invoice failed: %v\n", err)
@@ -144,7 +144,7 @@ func cancelHandler(svc *invoice.Service) cli.RunnerFunc {
 			return
 		}
 
-		invID := args[0]
+		invID := strings.TrimSpace(args[0])
 		err := svc.CancelInvoice(invID)
 		if err != nil {
 			fmt.Fprintf(out, "cancel invoice failed: %v\n", err)
@@ -162,7 +162,7 @@ func addItemHandler(svc *invoice.Service) cli.RunnerFunc {
 			return
 		}
 
-		invID, productName := args[0], strings.TrimSpace(args[1])
+		invID, productName := strings.TrimSpace(args[0]), strings.TrimSpace(args[1])
 		price, err := strconv.Atoi(strings.TrimSpace(args[2]))
 		if err != nil {
 			fmt.Fprintf(out, "add invoice item failed: invalid price argument: %v\n", err)
@@ -185,6 +185,24 @@ func addItemHandler(svc *invoice.Service) cli.RunnerFunc {
 	}
 }
 
+func deleteItemHandler(svc *invoice.Service) cli.RunnerFunc {
+	return func(out io.Writer, args ...string) {
+		if len(args) < 2 || args[0] == "" || args[1] == "" {
+			fmt.Fprint(out, "delete invoice item failed: missing arguments\n")
+			return
+		}
+
+		invID, itemID := strings.TrimSpace(args[0]), strings.TrimSpace(args[1])
+		err := svc.DeleteInvoiceItem(invID, itemID)
+		if err != nil {
+			fmt.Fprintf(out, "delete invoice item failed: %v\n", err)
+			return
+		}
+
+		fmt.Fprintf(out, "item %q successfully deleted from invoice %q\n", itemID, invID)
+	}
+}
+
 func updateCustomerHandler(svc *invoice.Service) cli.RunnerFunc {
 	return func(out io.Writer, args ...string) {
 		if len(args) < 2 || args[0] == "" || args[1] == "" {
@@ -192,7 +210,7 @@ func updateCustomerHandler(svc *invoice.Service) cli.RunnerFunc {
 			return
 		}
 
-		invID, name := args[0], strings.TrimSpace(args[1])
+		invID, name := strings.TrimSpace(args[0]), strings.TrimSpace(args[1])
 		err := svc.UpdateInvoiceCustomer(invID, name)
 		if err != nil {
 			fmt.Fprintf(out, "update invoice customer failed: %v\n", err)
