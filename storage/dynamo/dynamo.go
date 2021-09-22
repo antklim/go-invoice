@@ -102,8 +102,8 @@ func dInvoicePartitionKey(id string) string {
 type dItem struct {
 	ID          string    `dynamodbav:"id"`
 	ProductName string    `dynamodbav:"productName"`
-	Price       uint      `dynamodbav:"price"`
-	Qty         uint      `dynamodbav:"qty"`
+	Price       int       `dynamodbav:"price"`
+	Qty         int       `dynamodbav:"qty"`
 	CreatedAt   time.Time `dynamodbav:"createdAt"`
 }
 

@@ -182,12 +182,12 @@ func (inv *Invoice) itemsEqual(otherItems []Item) bool {
 type Item struct {
 	ID          string
 	ProductName string
-	Price       uint // price in cents
-	Qty         uint
+	Price       int // price in cents
+	Qty         int
 	CreatedAt   time.Time
 }
 
-func NewItem(id, productName string, price, qty uint) Item {
+func NewItem(id, productName string, price, qty int) Item {
 	return Item{
 		ID:          id,
 		ProductName: productName,

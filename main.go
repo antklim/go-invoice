@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -29,7 +30,7 @@ func initCli(exit chan<- struct{}, svc *invoice.Service) *cli.Cli {
 	c.Handle("issue", "Issue invoice.", issueHandler(svc))
 	c.Handle("pay", "Pay invoice.", payHandler(svc))
 	c.Handle("cancel", "Cancel invoice.", cancelHandler(svc))
-	// c.Handle("add-item", "Add invoice item.", nil)
+	c.Handle("add-item", "Add invoice item.", addItemHandler(svc))
 	// c.Handle("delete-item", "Delete invoice item.", nil)
 	c.Handle("update-customer", "Update invoice customer.", updateCustomerHandler(svc))
 	return c
@@ -64,7 +65,7 @@ func main() {
 func createHandler(svc *invoice.Service) cli.RunnerFunc {
 	return func(out io.Writer, args ...string) {
 		if len(args) == 0 || args[0] == "" {
-			fmt.Fprintf(out, "create invoice failed: missing customer name\n")
+			fmt.Fprint(out, "create invoice failed: missing customer name\n")
 			return
 		}
 
@@ -81,7 +82,7 @@ func createHandler(svc *invoice.Service) cli.RunnerFunc {
 func viewHandler(svc *invoice.Service) cli.RunnerFunc {
 	return func(out io.Writer, args ...string) {
 		if len(args) == 0 || args[0] == "" {
-			fmt.Fprintf(out, "view invoice failed: missing invoice ID\n")
+			fmt.Fprint(out, "view invoice failed: missing invoice ID\n")
 			return
 		}
 
@@ -103,7 +104,7 @@ func viewHandler(svc *invoice.Service) cli.RunnerFunc {
 func issueHandler(svc *invoice.Service) cli.RunnerFunc {
 	return func(out io.Writer, args ...string) {
 		if len(args) == 0 || args[0] == "" {
-			fmt.Fprintf(out, "issue invoice failed: missing invoice ID\n")
+			fmt.Fprint(out, "issue invoice failed: missing invoice ID\n")
 			return
 		}
 
@@ -121,7 +122,7 @@ func issueHandler(svc *invoice.Service) cli.RunnerFunc {
 func payHandler(svc *invoice.Service) cli.RunnerFunc {
 	return func(out io.Writer, args ...string) {
 		if len(args) == 0 || args[0] == "" {
-			fmt.Fprintf(out, "pay invoice failed: missing invoice ID\n")
+			fmt.Fprint(out, "pay invoice failed: missing invoice ID\n")
 			return
 		}
 
@@ -139,7 +140,7 @@ func payHandler(svc *invoice.Service) cli.RunnerFunc {
 func cancelHandler(svc *invoice.Service) cli.RunnerFunc {
 	return func(out io.Writer, args ...string) {
 		if len(args) == 0 || args[0] == "" {
-			fmt.Fprintf(out, "cancel invoice failed: missing invoice ID\n")
+			fmt.Fprint(out, "cancel invoice failed: missing invoice ID\n")
 			return
 		}
 
@@ -154,10 +155,40 @@ func cancelHandler(svc *invoice.Service) cli.RunnerFunc {
 	}
 }
 
+func addItemHandler(svc *invoice.Service) cli.RunnerFunc {
+	return func(out io.Writer, args ...string) {
+		if len(args) < 4 || args[0] == "" || args[1] == "" || args[2] == "" || args[3] == "" {
+			fmt.Fprint(out, "add invoice item failed: missing arguments\n")
+			return
+		}
+
+		invID, productName := args[0], strings.TrimSpace(args[1])
+		price, err := strconv.Atoi(strings.TrimSpace(args[2]))
+		if err != nil {
+			fmt.Fprintf(out, "add invoice item failed: invalid price argument: %v\n", err)
+			return
+		}
+
+		qty, err := strconv.Atoi(strings.TrimSpace(args[3]))
+		if err != nil {
+			fmt.Fprintf(out, "add invoice item failed: invalid qty argument: %v\n", err)
+			return
+		}
+
+		err = svc.AddInvoiceItem(invID, productName, price, qty)
+		if err != nil {
+			fmt.Fprintf(out, "add invoice item failed: %v\n", err)
+			return
+		}
+
+		fmt.Fprintf(out, "%q invoice item successfully added\n", invID)
+	}
+}
+
 func updateCustomerHandler(svc *invoice.Service) cli.RunnerFunc {
 	return func(out io.Writer, args ...string) {
 		if len(args) < 2 || args[0] == "" || args[1] == "" {
-			fmt.Fprintf(out, "update invoice customer failed: missing invoice ID and/or customer name\n")
+			fmt.Fprint(out, "update invoice customer failed: missing invoice ID and/or customer name\n")
 			return
 		}
 
