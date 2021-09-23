@@ -51,7 +51,7 @@ func TestInvoiceMarshalUnmarshal(t *testing.T) {
 		}
 
 		{
-			testDataDir := "../../test/data"
+			testDataDir := "../../test/fixtures"
 			testCases := []struct {
 				desc         string
 				file         string

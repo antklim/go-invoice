@@ -28,7 +28,32 @@ The following table shows the invoice status transitions:
 |Closed  | NO   | NO     | NO     |
 
 
-TODO: add project structure
+# Project layout
+```
+.
++-- cli                 # interactive CLI implementation
++-- invoice             # core of the application
+|   +-- invoice.go      # entities definitions
+|   +-- service.go      # application logic (business rules) implementation
+|   +-- storage.go      # application storage and storage factory interface definitions
+|
++-- scripts             # misc scripts
+|   +-- dynamodb        # dynamodb operations scripts such as create table, put item, etc.
+|
++-- storage             # application storage concrete implementations
+|   +-- dynamo          # DynamoDB storage implementation
+|   +-- memory          # In memory storage implementation
+|   +-- storage.go      # Storage factory implementation
+|
++-- test                # test utilities, mocks, and fixtures
+|   +-- api             # convinence APIs/DSL to set application in the state required by the test
+|   +-- fixtures        # test data fixtures
+|   +-- mocks           # various APIs mocks
+|
++-- docker-compose.yml  # local DynamoDB service
++-- main.go             # go-invoice application entry point
++-- Makefile            # test, build and release tools
+```
 
 # Testing
 To run test simply call:
