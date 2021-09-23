@@ -1,8 +1,22 @@
 version: '3.8'
 services: 
   dynamodb-local:
-    command: "-jar DynamoDBLocal.jar -inMemory"
-    image: "amazon/dynamodb-local:latest"
+    command: '-jar DynamoDBLocal.jar -inMemory'
+    image: amazon/dynamodb-local:latest
     container_name: dynamodb-local
     ports:
-      - "8000:8000"
+      - '8000:8000'
+
+  dynamodb-local-create-table:
+    depends_on:
+      - dynamodb-local
+    image: infrastructureascode/aws-cli:latest
+    entrypoint: sh
+    environment:
+      AWS_ACCESS_KEY_ID: DUMMYIDEXAMPL
+      AWS_SECRET_ACCESS_KEY: DUMMYEXAMPLEKEY
+      AWS_ENDPOINT_URL: http://dynamodb-local:8000
+      AWS_DEFAULT_REGION: ap-southeast-2
+    volumes:
+      - ./scripts/dynamodb-local/create-table.sh:/project/create-table.sh:ro
+    command: './create-table.sh'
