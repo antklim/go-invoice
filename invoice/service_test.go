@@ -129,7 +129,7 @@ func TestViewInvoice(t *testing.T) {
 }
 
 func TestUpdateInvoiceCustomer(t *testing.T) {
-	srv, invoiceAPI := testSetup()
+	srv, invoiceAPI := serviceSetup()
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
@@ -222,8 +222,7 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 			t.Errorf("invalid invoice.CustomerName %q, want %q", vinv.CustomerName, customer)
 		}
 		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
-			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
-				vinv.UpdatedAt.Format(time.RFC3339Nano), inv.UpdatedAt.Format(time.RFC3339Nano))
+			t.Errorf("invalid invoice.UpdatedAt %v, want it to be after %v", vinv.UpdatedAt, inv.UpdatedAt)
 		}
 	})
 }

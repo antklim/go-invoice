@@ -98,8 +98,8 @@ func testPutItemInput(t *testing.T, inv invoice.Invoice, input *dynamodb.PutItem
 		t.Errorf("invalid dInvoice.CreatedAt %v, want %v", dinv.CreatedAt, inv.CreatedAt)
 	}
 
-	if !dinv.UpdatedAt.Equal(inv.UpdatedAt) {
-		t.Errorf("invalid dInvoice.UpdatedAt %v, want %v", dinv.UpdatedAt, inv.UpdatedAt)
+	if !dinv.UpdatedAt.Equal(inv.UpdatedAt) && !dinv.UpdatedAt.After(inv.UpdatedAt) {
+		t.Errorf("invalid dInvoice.UpdatedAt %v, want it to be equal or after %v", dinv.UpdatedAt, inv.UpdatedAt)
 	}
 }
 

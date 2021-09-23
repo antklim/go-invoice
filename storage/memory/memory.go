@@ -45,12 +45,10 @@ func (memo *Memory) UpdateInvoice(inv invoice.Invoice) error {
 	memo.Lock()
 	defer memo.Unlock()
 
-	r, ok := memo.records[inv.ID]
-	if !ok {
+	if _, ok := memo.records[inv.ID]; !ok {
 		return fmt.Errorf("invoice %q not found", inv.ID)
 	}
 
-	inv.CreatedAt = r.CreatedAt
 	inv.UpdatedAt = time.Now()
 	memo.records[inv.ID] = inv
 

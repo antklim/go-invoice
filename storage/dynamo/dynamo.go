@@ -74,7 +74,7 @@ func getItemOutputUnmarshal(output *dynamodb.GetItemOutput) (*dInvoice, error) {
 		return nil, nil
 	}
 
-	dInv := dInvoice{}
+	var dInv dInvoice
 	if err := dynamodbattribute.UnmarshalMap(output.Item, &dInv); err != nil {
 		return nil, err
 	}
@@ -202,6 +202,7 @@ func (d *Dynamo) UpdateInvoice(inv invoice.Invoice) error {
 		return err
 	}
 
+	inv.UpdatedAt = time.Now()
 	err = d.upsertInvoice(inv, expr)
 	if isConditionalCheckError(err) {
 		return fmt.Errorf("invoice %q not found", inv.ID)
