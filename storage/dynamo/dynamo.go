@@ -157,11 +157,8 @@ func (d *Dynamo) AddInvoice(inv invoice.Invoice) error {
 	}
 
 	err = d.upsertInvoice(inv, expr)
-	if err != nil {
-		var aerr awserr.Error
-		if errors.As(err, &aerr) && aerr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
-			return fmt.Errorf("invoice %q exists", inv.ID)
-		}
+	if isConditionalCheckError(err) {
+		return fmt.Errorf("invoice %q exists", inv.ID)
 	}
 
 	return err
@@ -206,11 +203,8 @@ func (d *Dynamo) UpdateInvoice(inv invoice.Invoice) error {
 	}
 
 	err = d.upsertInvoice(inv, expr)
-	if err != nil {
-		var aerr awserr.Error
-		if errors.As(err, &aerr) && aerr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
-			return fmt.Errorf("invoice %q not found", inv.ID)
-		}
+	if isConditionalCheckError(err) {
+		return fmt.Errorf("invoice %q not found", inv.ID)
 	}
 
 	return err
@@ -238,4 +232,10 @@ func (d *Dynamo) upsertInvoice(inv invoice.Invoice, expr expression.Expression) 
 
 	_, err = d.client.PutItem(input)
 	return err
+}
+
+func isConditionalCheckError(err error) bool {
+	var aerr awserr.Error
+	return err != nil && errors.As(err, &aerr) &&
+		aerr.Code() == dynamodb.ErrCodeConditionalCheckFailedException
 }
