@@ -32,6 +32,8 @@ func NewDynamo(table string, opts ...DynamoOption) *Dynamo {
 	if dopts.endpoint != "" {
 		cfg.WithEndpoint(dopts.endpoint)
 	}
+
+	// TODO: move session and client init to MakeStorage
 	sess := session.Must(session.NewSession(cfg))
 	client := dynamodb.New(sess)
 

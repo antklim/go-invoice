@@ -5,6 +5,7 @@ import (
 
 	"github.com/antklim/go-invoice/invoice"
 	"github.com/antklim/go-invoice/storage"
+	testapi "github.com/antklim/go-invoice/test/api"
 )
 
 func storageSetup() invoice.Storage {
@@ -21,4 +22,11 @@ func storageSetup() invoice.Storage {
 	}
 	strg := f.MakeStorage()
 	return strg
+}
+
+func serviceSetup() (*invoice.Service, *testapi.Invoice) {
+	strg := storageSetup()
+	srv := invoice.New(strg)
+	api := testapi.NewIvoiceAPI(strg)
+	return srv, api
 }

@@ -13,8 +13,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// TODO: switch between different storages based on env variable
-
 func testSetup() (*invoice.Service, *testapi.Invoice) {
 	f := new(storage.Memory)
 	strg := f.MakeStorage()
@@ -24,7 +22,7 @@ func testSetup() (*invoice.Service, *testapi.Invoice) {
 }
 
 func TestCreateInvoice(t *testing.T) {
-	srv, _ := testSetup()
+	srv, _ := serviceSetup()
 
 	t.Run("successfully stores the invoice", func(t *testing.T) {
 		customer := "John Doe"
@@ -85,7 +83,7 @@ func TestCreateInvoice(t *testing.T) {
 }
 
 func TestViewInvoice(t *testing.T) {
-	srv, invoiceAPI := testSetup()
+	srv, invoiceAPI := serviceSetup()
 
 	t.Run("returns nil when no invoice is found in data storage", func(t *testing.T) {
 		t.Skip()
