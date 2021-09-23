@@ -2,30 +2,11 @@ package invoice_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/antklim/go-invoice/invoice"
-	"github.com/antklim/go-invoice/storage"
 	"github.com/google/uuid"
 )
-
-// TODO: move to test_helpers
-func storageSetup() invoice.Storage {
-	var f invoice.StorageFactory
-	switch os.Getenv("TEST_STORAGE") {
-	case "dynamo":
-		tableName := "invoices"
-		if os.Getenv("TEST_STORAGE_TABLE") != "" {
-			tableName = os.Getenv("TEST_STORAGE_TABLE")
-		}
-		f = storage.NewDynamo(tableName, storage.WithEndpoint(os.Getenv("TEST_AWS_ENDPOINT")))
-	default:
-		f = new(storage.Memory)
-	}
-	strg := f.MakeStorage()
-	return strg
-}
 
 func TestAddInvoiceFails(t *testing.T) {
 	t.Run("when repeat adding existing invoice", func(t *testing.T) {
