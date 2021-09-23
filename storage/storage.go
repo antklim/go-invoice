@@ -18,8 +18,8 @@ func (Memory) MakeStorage() invoice.Storage {
 var _ invoice.StorageFactory = new(Memory)
 
 type Dynamo struct {
-	client dynamo.API
-	table  string
+	table string
+	opts  dynamoOptions
 }
 
 func NewDynamo(table string, opts ...DynamoOption) *Dynamo {
@@ -28,23 +28,21 @@ func NewDynamo(table string, opts ...DynamoOption) *Dynamo {
 		o.apply(&dopts)
 	}
 
-	cfg := &aws.Config{Region: aws.String(dopts.region)}
-	if dopts.endpoint != "" {
-		cfg.WithEndpoint(dopts.endpoint)
-	}
-
-	// TODO: move session and client init to MakeStorage
-	sess := session.Must(session.NewSession(cfg))
-	client := dynamodb.New(sess)
-
 	return &Dynamo{
-		client: client,
-		table:  table,
+		table: table,
+		opts:  dopts,
 	}
 }
 
 func (s *Dynamo) MakeStorage() invoice.Storage {
-	return dynamo.New(s.client, s.table)
+	cfg := &aws.Config{Region: aws.String(s.opts.region)}
+	if s.opts.endpoint != "" {
+		cfg.WithEndpoint(s.opts.endpoint)
+	}
+
+	sess := session.Must(session.NewSession(cfg))
+	client := dynamodb.New(sess)
+	return dynamo.New(client, s.table)
 }
 
 var _ invoice.StorageFactory = (*Dynamo)(nil)
