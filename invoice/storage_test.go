@@ -21,7 +21,7 @@ func TestAddInvoiceFails(t *testing.T) {
 		err := strg.AddInvoice(inv)
 		if err == nil {
 			t.Errorf("expected second call AddInvoice(%v) to fail", inv)
-		} else if got, want := err.Error(), fmt.Sprintf("ID %q exists", invID); got != want {
+		} else if got, want := err.Error(), fmt.Sprintf("invoice %q exists", invID); got != want {
 			t.Errorf("second call AddInvoice(%v) = %v, want %v", inv, got, want)
 		}
 	})

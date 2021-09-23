@@ -7,6 +7,7 @@ import (
 
 	"github.com/antklim/go-invoice/invoice"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
@@ -155,7 +156,15 @@ func (d *Dynamo) AddInvoice(inv invoice.Invoice) error {
 		return err
 	}
 
-	return d.upsertInvoice(inv, expr)
+	err = d.upsertInvoice(inv, expr)
+	if err != nil {
+		var aerr awserr.Error
+		if errors.As(err, &aerr) && aerr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
+			return fmt.Errorf("invoice %q exists", inv.ID)
+		}
+	}
+
+	return err
 }
 
 func (d *Dynamo) FindInvoice(id string) (*invoice.Invoice, error) {
@@ -196,7 +205,15 @@ func (d *Dynamo) UpdateInvoice(inv invoice.Invoice) error {
 		return err
 	}
 
-	return d.upsertInvoice(inv, expr)
+	err = d.upsertInvoice(inv, expr)
+	if err != nil {
+		var aerr awserr.Error
+		if errors.As(err, &aerr) && aerr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
+			return fmt.Errorf("invoice %q not found", inv.ID)
+		}
+	}
+
+	return err
 }
 
 // upsertInvoice inserts or updates an invoice depending on provided expression.
