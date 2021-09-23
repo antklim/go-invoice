@@ -21,3 +21,5 @@ go-cov-report:
 	go tool cover -html=coverage.out
 
 .DEFAULT_GOAL := help
+
+# TODO: add build and build info

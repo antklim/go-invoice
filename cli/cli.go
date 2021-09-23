@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+// TODO: add cli tests
+
 const (
 	helpFormat = "%-25s%s\n"
 	help       = "help"

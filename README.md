@@ -26,3 +26,33 @@ The following table shows the invoice status transitions:
 |Open    | NO   | YES    | YES    |
 |Issued  | NO   | NO     | YES    |
 |Closed  | NO   | NO     | NO     |
+
+
+TODO: add project structure
+
+# Testing
+To run test simply call:
+```
+$ make test
+```
+
+This will run all tests and calculate coverage. By default all tests run using in-memory storage. To run tests using DynamoDB storage, additional parameters should be provided:
+```
+$ AWS_PROFILE=local TEST_STORAGE=dynamo TEST_AWS_ENDPOINT=http://localhost:8000 make test
+```
+
+TODO: explain prerequisites
+TODO: add supported env var flags and values for testing
+
+# Usage
+To launch the `go-invoice` application run the following command:
+```
+$ go run main.go
+```
+
+By default the application uses in-memory storage. To configure application to use DynamoDB, additional parameters shuld be provided:
+```
+$ AWS_PROFILE=local go run main.go -storage=dynamo -endpoint=http://localhost:8000
+```
+
+_Note_: it's important to provide protocol when configuring an endpoint. Just `localhost:8000` does not work.
