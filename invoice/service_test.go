@@ -52,9 +52,7 @@ func TestCreateInvoice(t *testing.T) {
 		}
 
 		if !inv.CreatedAt.Equal(inv.UpdatedAt) {
-			t.Errorf("invoice.CreatedAt = %s is not equal to invoice.UpdatedAt = %s",
-				inv.CreatedAt.Format(time.RFC3339Nano),
-				inv.UpdatedAt.Format(time.RFC3339Nano))
+			t.Errorf("invoice.CreatedAt %v is not equal to invoice.UpdatedAt %v", inv.CreatedAt, inv.UpdatedAt)
 		}
 
 		vinv, err := srv.ViewInvoice(inv.ID)
@@ -339,9 +337,7 @@ func TestAddInvoiceItem(t *testing.T) {
 		}
 
 		if !item.CreatedAt.After(inv.CreatedAt) {
-			t.Errorf("item.CreatedAt = %s should be after invoice.CreatedAt = %s",
-				item.CreatedAt.Format(time.RFC3339Nano),
-				inv.CreatedAt.Format(time.RFC3339Nano))
+			t.Errorf("item.CreatedAt %v should be after invoice.CreatedAt %v", item.CreatedAt, inv.CreatedAt)
 		}
 
 		// validate that item added
@@ -353,8 +349,7 @@ func TestAddInvoiceItem(t *testing.T) {
 			t.Errorf("invalid invoice.Items number %d, want %d", len(vinv.Items), nitems+1)
 		}
 		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
-			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
-				vinv.UpdatedAt.Format(time.RFC3339Nano), inv.UpdatedAt.Format(time.RFC3339Nano))
+			t.Errorf("invalid invoice.UpdatedAt %v, want it to be after %v", vinv.UpdatedAt, inv.UpdatedAt)
 		}
 	})
 }
@@ -457,8 +452,7 @@ func TestDeleteInvoiceItem(t *testing.T) {
 			t.Errorf("invoice %q should not contain item %q", vinv.ID, itemID)
 		}
 		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
-			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
-				vinv.UpdatedAt.Format(time.RFC3339Nano), inv.UpdatedAt.Format(time.RFC3339Nano))
+			t.Errorf("invalid invoice.UpdatedAt %v, want it to be after %v", vinv.UpdatedAt, inv.UpdatedAt)
 		}
 	})
 
@@ -591,8 +585,7 @@ func TestIssueInvoice(t *testing.T) {
 			t.Error("invoice issue date should be within the last 100 msec")
 		}
 		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
-			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
-				vinv.UpdatedAt.Format(time.RFC3339Nano), inv.UpdatedAt.Format(time.RFC3339Nano))
+			t.Errorf("invalid invoice.UpdatedAt %v, want it to be after %v", vinv.UpdatedAt, inv.UpdatedAt)
 		}
 	})
 }
@@ -688,8 +681,7 @@ func TestPayInvoice(t *testing.T) {
 			t.Errorf("invalid invoice.Status %q, want %q", vinv.Status, invoice.Paid)
 		}
 		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
-			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
-				vinv.UpdatedAt.Format(time.RFC3339Nano), inv.UpdatedAt.Format(time.RFC3339Nano))
+			t.Errorf("invalid invoice.UpdatedAt %v, want it to be after %v", vinv.UpdatedAt, inv.UpdatedAt)
 		}
 	})
 }
@@ -782,8 +774,7 @@ func TestCancelInvoice(t *testing.T) {
 			t.Errorf("invalid invoice.Status %q, want %q", vinv.Status, invoice.Canceled)
 		}
 		if !vinv.UpdatedAt.After(inv.UpdatedAt) {
-			t.Errorf("invalid invoice.UpdatedAt %s, want it to be after %s",
-				vinv.UpdatedAt.Format(time.RFC3339Nano), inv.UpdatedAt.Format(time.RFC3339Nano))
+			t.Errorf("invalid invoice.UpdatedAt %v, want it to be after %v", vinv.UpdatedAt, inv.UpdatedAt)
 		}
 	})
 }
