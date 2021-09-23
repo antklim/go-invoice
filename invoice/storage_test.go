@@ -2,6 +2,7 @@ package invoice_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/antklim/go-invoice/invoice"
@@ -9,8 +10,19 @@ import (
 	"github.com/google/uuid"
 )
 
+// TODO: move to test_helpers
 func storageSetup() invoice.Storage {
-	f := new(storage.Memory)
+	var f invoice.StorageFactory
+	switch os.Getenv("TEST_STORAGE") {
+	case "dynamo":
+		tableName := "invoices"
+		if os.Getenv("TEST_STORAGE_TABLE") != "" {
+			tableName = os.Getenv("TEST_STORAGE_TABLE")
+		}
+		f = storage.NewDynamo(tableName, storage.WithEndpoint(os.Getenv("TEST_AWS_ENDPOINT")))
+	default:
+		f = new(storage.Memory)
+	}
 	strg := f.MakeStorage()
 	return strg
 }
@@ -38,7 +50,7 @@ func TestFindInvoice(t *testing.T) {
 	t.Run("returns nil invoice when no invoices found", func(t *testing.T) {
 		strg := storageSetup()
 
-		invID := uuid.Nil.String()
+		invID := uuid.NewString()
 		inv, err := strg.FindInvoice(invID)
 		if err != nil {
 			t.Errorf("FindInvoice(%q) failed: %v", invID, err)
@@ -53,7 +65,7 @@ func TestUpdateInvoiceFails(t *testing.T) {
 	t.Run("when updating non-existing invoice", func(t *testing.T) {
 		strg := storageSetup()
 
-		invID := uuid.Nil.String()
+		invID := uuid.NewString()
 		inv := invoice.NewInvoice(invID, "John Doe")
 
 		err := strg.UpdateInvoice(inv)

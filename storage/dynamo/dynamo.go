@@ -69,7 +69,7 @@ func invoiceUnmarshal(inv invoice.Invoice) *dInvoice {
 }
 
 func getItemOutputUnmarshal(output *dynamodb.GetItemOutput) (*dInvoice, error) {
-	if output == nil {
+	if output == nil || len(output.Item) == 0 {
 		return nil, nil
 	}
 
