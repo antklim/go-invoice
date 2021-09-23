@@ -3,6 +3,7 @@ package invoice
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -203,6 +204,28 @@ func (item *Item) Equal(other *Item) bool {
 		item.Price == other.Price &&
 		item.Qty == other.Qty &&
 		item.CreatedAt.Equal(other.CreatedAt)
+}
+
+func (item *Item) Validate() error {
+	var errors []string
+
+	if item.ProductName == "" {
+		errors = append(errors, "product name cannot be blank")
+	}
+
+	if item.Price < 1 {
+		errors = append(errors, "price should be positive")
+	}
+
+	if item.Qty < 1 {
+		errors = append(errors, "qty should be positive")
+	}
+
+	if len(errors) == 0 {
+		return nil
+	}
+
+	return fmt.Errorf("item details not valid: %s", strings.Join(errors, ", "))
 }
 
 type byItemID []Item

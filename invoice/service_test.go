@@ -244,6 +244,18 @@ func TestAddInvoiceItem(t *testing.T) {
 		}
 	})
 
+	t.Run("fails when item details not valid", func(t *testing.T) {
+		invID, productName, price, qty := uuid.Nil.String(), "", 0, 0
+		_, err := srv.AddInvoiceItem(invID, productName, price, qty)
+		if err == nil {
+			t.Fatalf("expected AddInvoiceItems(%q) to fail when item details not valid", invID)
+		}
+		want := "item details not valid: product name cannot be blank, price should be positive, qty should be positive"
+		if got := err.Error(); got != want {
+			t.Errorf("AddInvoiceItems(%q) failed with: %s, want %s", invID, got, want)
+		}
+	})
+
 	t.Run("fails when invoice is in the status other than open", func(t *testing.T) {
 		statuses := []invoice.Status{invoice.Issued, invoice.Paid, invoice.Canceled}
 		invoices, err := invoiceAPI.CreateInvoicesWithStatuses(statuses...)

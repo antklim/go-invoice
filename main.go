@@ -15,8 +15,6 @@ import (
 	"github.com/antklim/go-invoice/storage"
 )
 
-// TODO: add integration tests
-
 var (
 	storageType string
 	tableName   string
