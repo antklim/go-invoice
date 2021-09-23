@@ -56,7 +56,7 @@ func initService() *invoice.Service {
 	case "memory":
 		f = new(storage.Memory)
 	case "dynamo":
-		f = storage.NewDynamo(nil, tableName)
+		f = storage.NewDynamo(tableName, storage.WithEndpoint(awsEndpoint))
 	default:
 		panic("svc: unknown storage " + storageType)
 	}
