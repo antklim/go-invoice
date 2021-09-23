@@ -7,19 +7,10 @@ import (
 	"time"
 
 	"github.com/antklim/go-invoice/invoice"
-	"github.com/antklim/go-invoice/storage"
 	testapi "github.com/antklim/go-invoice/test/api"
 	"github.com/antklim/go-invoice/test/mocks"
 	"github.com/google/uuid"
 )
-
-func testSetup() (*invoice.Service, *testapi.Invoice) {
-	f := new(storage.Memory)
-	strg := f.MakeStorage()
-	srv := invoice.New(strg)
-	api := testapi.NewIvoiceAPI(strg)
-	return srv, api
-}
 
 func TestCreateInvoice(t *testing.T) {
 	srv, _ := serviceSetup()
@@ -226,7 +217,7 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 }
 
 func TestAddInvoiceItem(t *testing.T) {
-	srv, invoiceAPI := testSetup()
+	srv, invoiceAPI := serviceSetup()
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
@@ -355,7 +346,7 @@ func TestAddInvoiceItem(t *testing.T) {
 }
 
 func TestDeleteInvoiceItem(t *testing.T) {
-	srv, invoiceAPI := testSetup()
+	srv, invoiceAPI := serviceSetup()
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID, itemID := uuid.Nil.String(), uuid.Nil.String()
@@ -492,7 +483,7 @@ func TestDeleteInvoiceItem(t *testing.T) {
 }
 
 func TestIssueInvoice(t *testing.T) {
-	srv, invoiceAPI := testSetup()
+	srv, invoiceAPI := serviceSetup()
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
@@ -591,7 +582,7 @@ func TestIssueInvoice(t *testing.T) {
 }
 
 func TestPayInvoice(t *testing.T) {
-	srv, invoiceAPI := testSetup()
+	srv, invoiceAPI := serviceSetup()
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
@@ -687,7 +678,7 @@ func TestPayInvoice(t *testing.T) {
 }
 
 func TestCancelInvoice(t *testing.T) {
-	srv, invoiceAPI := testSetup()
+	srv, invoiceAPI := serviceSetup()
 
 	t.Run("fails when no invoice found", func(t *testing.T) {
 		invID := uuid.Nil.String()
