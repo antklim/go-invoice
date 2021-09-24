@@ -13,7 +13,7 @@ services:
     image: infrastructureascode/aws-cli:latest
     entrypoint: sh
     environment:
-      AWS_ACCESS_KEY_ID: DUMMYIDEXAMPL
+      AWS_ACCESS_KEY_ID: DUMMYIDEXAMPLE
       AWS_SECRET_ACCESS_KEY: DUMMYEXAMPLEKEY
       AWS_ENDPOINT_URL: http://dynamodb-local:8000
       AWS_DEFAULT_REGION: ap-southeast-2

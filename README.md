@@ -1,32 +1,22 @@
 # go-invoice
 
-TODO: update with the latest info
-
-Go-invoice is a simple invoice management application. A user can create, update, issue and close the invoice.
-The invoice contains such information as ID, customer name and a list of items. The invoice item has its own ID and a product information such as SKU, product name, price and quantity.
+Go-invoice is a simple invoice management application. A user can create, update, issue, pay and cancel invoice.
+The invoice contains such information as ID, customer name and a list of items. The invoice item has its own ID and a product information such as product name, price and quantity.
 
 When invoice created its open to updates:
 - customer name and date can be updated
-- items can either be deleted or added
+- items can be added and deleted
 
-After invoice being issued it cannot be updated. Issued invoice can be viewed.
-Closing the invoice can be done in two ways: cancel the invoice and comfirm invoice payment. Closed invoice cannot be updated.
+Invoice in any status can be viewed. But only invoices in open status can be updated.
 
-|        | Can be viewed | Can be updated |
-|--------|---------------|----------------|
-|Open    | YES           | YES            |
-|Issued  | YES           | NO             |
-|Closed  | YES           | NO             |
-
-
-The following table shows the invoice status transitions:
-
-|        | Open | Issued | Closed |
-|--------|------|--------|--------|
-|Open    | NO   | YES    | YES    |
-|Issued  | NO   | NO     | YES    |
-|Closed  | NO   | NO     | NO     |
-
+The following diagram shows invoices statuses (in square brackets `[]`) and actions that cause status change (in parentheses `()`)
+```
+(Create Invoice)---> [OPEN] ---(Issue Invoice)---> [ISSUED] ---(Pay Invoice)---> [PAID]
+                        |                              |
+                 (Cancel Invoice)               (Cancel Invoice)
+                           \                      /
+                            +---> [CANCELED] <---+
+```
 
 # Project layout
 ```
@@ -81,7 +71,7 @@ region = ap-southeast-2
 
 # ~/.aws/credentials
 [local]
-aws_access_key_id = DUMMYIDEXAMPL
+aws_access_key_id = DUMMYIDEXAMPLE
 aws_secret_access_key = DUMMYEXAMPLEKEY
 ```
 
