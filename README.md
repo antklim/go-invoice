@@ -56,18 +56,65 @@ The following table shows the invoice status transitions:
 ```
 
 # Testing
-To run test simply call:
+To run tests simply call the following command:
 ```
 $ make test
 ```
 
-This will run all tests and calculate coverage. By default all tests run using in-memory storage. To run tests using DynamoDB storage, additional parameters should be provided:
+This command above runs all tests and calculates coverage. By default all tests run using in-memory storage.
+
+Running tests using DynamoDB storage requires additional configuration. First, an instance of DynamoDB should be available for the test. The following command launches a local DynamoDB and creates `invoices` table:
+```
+$ docker-compose up
+```
+_Note_: DynamoDB docker container configured to bind host port `8000`. Make sure this port is available before you start a container or update ports binding settings.
+
+The following command runs tests and uses local DynamoDB instance as storage:
 ```
 $ AWS_PROFILE=local TEST_STORAGE=dynamo TEST_AWS_ENDPOINT=http://localhost:8000 make test
 ```
+AWS SDK uses `AWS_PROFILE` to access user credentials to open a connection to AWS Resources. Use [aws configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) to set AWS profile. The following is an example of `local` profile settings:
+```
+# ~/.aws/config
+[profile local]
+region = ap-southeast-2
 
-TODO: explain prerequisites
-TODO: add supported env var flags and values for testing
+# ~/.aws/credentials
+[local]
+aws_access_key_id = DUMMYIDEXAMPL
+aws_secret_access_key = DUMMYEXAMPLEKEY
+```
+
+Because of all resources running locally (in a docker container) a connection should be configured to use a custom endpoint URL. `TEST_AWS_ENDPOINT` parameter enables to do it.  
+`TEST_STORAGE` tells to test suite what storage should it be using (by default in-memory storage used).
+
+The following is the list of all supported test configuration options:
+<table>
+<thead><tr><th>Env variable</th><th>Description</th></thead>
+<tbody>
+<tr><td>
+  TEST_AWS_ENDPOINT
+</td><td>
+  <p>A custom AWS endpoint URL. Used when runnning tests against local DynamoDB instance. The port number value should match ports binding settings in <b><i>docker-compose.yml</i></b>.</p>
+</td></tr>
+<tr><td>
+  TEST_STORAGE
+</td><td>
+  <p>A storage to use when running test. Supported storages are</p>
+  <ul>
+    <li>memory - in-memory storage</li>
+    <li>dynamo - DynamoDB storage</li>
+  </ul>
+  <p>By default in-memory storage used.</p>
+</td></tr>
+<tr><td>
+  TEST_STORAGE_TABLE
+</td><td>
+  <p>A storage table name. Used only when <b><i>dynamo</i></b> storage selected. Default value is <b><i>invoices</i></b>.</p>
+</td></tr>
+</tbody>
+</table>
+
 
 # Usage
 To launch the `go-invoice` application run the following command:
