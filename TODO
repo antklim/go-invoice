@@ -1,0 +1,7 @@
+Backup/restore in-memory data to CSV file
+Add view invoices list functionality (with filter and ordering by date)
+Add build target to Makefile and build info.
+Add CI pipeline
+Add releaser
+Add Dependabot
+Update data model to ledger.
