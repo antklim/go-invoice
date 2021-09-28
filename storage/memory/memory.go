@@ -22,10 +22,12 @@ func New() *Memory {
 func (memo *Memory) AddInvoice(inv invoice.Invoice) error {
 	memo.Lock()
 	defer memo.Unlock()
+
 	if _, ok := memo.records[inv.ID]; ok {
 		return fmt.Errorf("invoice %q exists", inv.ID)
 	}
 	memo.records[inv.ID] = inv
+
 	return nil
 }
 
