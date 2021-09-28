@@ -75,7 +75,6 @@ func TestViewInvoice(t *testing.T) {
 	srv, invoiceAPI := serviceSetup()
 
 	t.Run("returns nil when no invoice is found in data storage", func(t *testing.T) {
-		t.Skip()
 		invID := uuid.Nil.String()
 		inv, err := srv.ViewInvoice(invID)
 		if err != nil {
