@@ -45,14 +45,6 @@ func TestCreateInvoice(t *testing.T) {
 		if !inv.CreatedAt.Equal(inv.UpdatedAt) {
 			t.Errorf("invoice.CreatedAt %v is not equal to invoice.UpdatedAt %v", inv.CreatedAt, inv.UpdatedAt)
 		}
-
-		vinv, err := srv.ViewInvoice(inv.ID)
-		if err != nil {
-			t.Fatalf("ViewInvoice(%q) failed: %v", inv.ID, err)
-		}
-		if !inv.Equal(vinv) {
-			t.Errorf("invalid invoice %v, want %v", vinv, inv)
-		}
 	})
 
 	t.Run("propagates data storage errors", func(t *testing.T) {
