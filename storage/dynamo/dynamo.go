@@ -237,6 +237,6 @@ func (d *Dynamo) upsertInvoice(inv invoice.Invoice, expr expression.Expression) 
 
 func isConditionalCheckError(err error) bool {
 	var aerr awserr.Error
-	return err != nil && errors.As(err, &aerr) &&
+	return errors.As(err, &aerr) &&
 		aerr.Code() == dynamodb.ErrCodeConditionalCheckFailedException
 }
