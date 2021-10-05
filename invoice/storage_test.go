@@ -12,16 +12,14 @@ func TestAddInvoiceFails(t *testing.T) {
 	t.Run("when repeat adding existing invoice", func(t *testing.T) {
 		strg := storageSetup()
 
-		invID := uuid.NewString()
-		inv := invoice.NewInvoice(invID, "John Doe")
+		inv := invoice.NewInvoice("John Doe")
 		if err := strg.AddInvoice(inv); err != nil {
 			t.Errorf("AddInvoice(%v) failed: %v", inv, err)
 		}
 
-		err := strg.AddInvoice(inv)
-		if err == nil {
+		if err := strg.AddInvoice(inv); err == nil {
 			t.Errorf("expected second call AddInvoice(%v) to fail", inv)
-		} else if got, want := err.Error(), fmt.Sprintf("invoice %q exists", invID); got != want {
+		} else if got, want := err.Error(), fmt.Sprintf("invoice %q exists", inv.ID); got != want {
 			t.Errorf("second call AddInvoice(%v) = %v, want %v", inv, got, want)
 		}
 	})
@@ -46,13 +44,10 @@ func TestUpdateInvoiceFails(t *testing.T) {
 	t.Run("when updating non-existing invoice", func(t *testing.T) {
 		strg := storageSetup()
 
-		invID := uuid.NewString()
-		inv := invoice.NewInvoice(invID, "John Doe")
-
-		err := strg.UpdateInvoice(inv)
-		if err == nil {
+		inv := invoice.NewInvoice("John Doe")
+		if err := strg.UpdateInvoice(inv); err == nil {
 			t.Errorf("expected UpdateInvoice(%v) to fail", inv)
-		} else if got, want := err.Error(), fmt.Sprintf("invoice %q not found", invID); got != want {
+		} else if got, want := err.Error(), fmt.Sprintf("invoice %q not found", inv.ID); got != want {
 			t.Errorf("UpdateInvoice(%v) = %v, want %v", inv, got, want)
 		}
 	})

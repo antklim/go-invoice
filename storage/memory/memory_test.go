@@ -10,7 +10,7 @@ import (
 
 func TestFindInvoice(t *testing.T) {
 	strg := memory.New()
-	inv := invoice.NewInvoice("123", "customer")
+	inv := invoice.NewInvoice("John Doe")
 
 	vinv, err := strg.FindInvoice(inv.ID)
 	if err != nil {
@@ -35,7 +35,7 @@ func TestFindInvoice(t *testing.T) {
 
 func TestUpdateInvoice(t *testing.T) {
 	strg := memory.New()
-	inv := invoice.NewInvoice("123", "customer")
+	inv := invoice.NewInvoice("John Doe")
 
 	if err := strg.AddInvoice(inv); err != nil {
 		t.Errorf("AddInvoice(%v) failed: %v", inv, err)

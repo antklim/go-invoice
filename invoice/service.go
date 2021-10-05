@@ -2,6 +2,7 @@ package invoice
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -26,8 +27,7 @@ func New(strg Storage) *Service {
 // CreateInvoice generates and stores an invoice. A new invoice generated with
 // the provided customer name. Invoice and any occurred error returned.
 func (s *Service) CreateInvoice(customerName string) (Invoice, error) {
-	invID := uuid.NewString()
-	inv := NewInvoice(invID, customerName)
+	inv := NewInvoice(customerName)
 	err := s.strg.AddInvoice(inv)
 	if err != nil {
 		err = errors.Wrap(err, errCreateFailed)
@@ -196,4 +196,16 @@ func (s *Service) findInvoice(id string) (*Invoice, error) {
 		return nil, errors.Wrapf(err, errFindFailed, id)
 	}
 	return inv, nil
+}
+
+func NewInvoice(customer string) Invoice {
+	id := uuid.NewString()
+	now := time.Now()
+	return Invoice{
+		ID:           id,
+		CustomerName: customer,
+		Status:       Open,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}
 }

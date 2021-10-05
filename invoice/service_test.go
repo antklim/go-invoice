@@ -163,7 +163,7 @@ func TestUpdateInvoiceCustomer(t *testing.T) {
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
 		e := errors.New("storage failed to update invoice")
-		inv := invoice.NewInvoice(uuid.NewString(), "John Doe")
+		inv := invoice.NewInvoice("John Doe")
 		strg := mocks.NewStorage(
 			mocks.WithFoundInvoice(&inv),
 			mocks.WithUpdateInvoiceError(e))
@@ -271,7 +271,7 @@ func TestAddInvoiceItem(t *testing.T) {
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
 		e := errors.New("storage failed to update invoice")
-		inv := invoice.NewInvoice(uuid.NewString(), "John Doe")
+		inv := invoice.NewInvoice("John Doe")
 		strg := mocks.NewStorage(
 			mocks.WithFoundInvoice(&inv),
 			mocks.WithUpdateInvoiceError(e))
@@ -525,7 +525,7 @@ func TestIssueInvoice(t *testing.T) {
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
 		e := errors.New("storage failed to update invoice")
-		inv := invoice.NewInvoice(uuid.NewString(), "John Doe")
+		inv := invoice.NewInvoice("John Doe")
 		strg := mocks.NewStorage(
 			mocks.WithFoundInvoice(&inv),
 			mocks.WithUpdateInvoiceError(e))
@@ -720,7 +720,7 @@ func TestCancelInvoice(t *testing.T) {
 
 	t.Run("fails when data storage error occurred - due to invoice update failure", func(t *testing.T) {
 		e := errors.New("storage failed to update invoice")
-		inv := invoice.NewInvoice(uuid.NewString(), "John Doe")
+		inv := invoice.NewInvoice("John Doe")
 		strg := mocks.NewStorage(
 			mocks.WithFoundInvoice(&inv),
 			mocks.WithUpdateInvoiceError(e))

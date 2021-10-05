@@ -23,7 +23,7 @@ func TestInvoicePK(t *testing.T) {
 
 func TestInvoiceMarshalUnmarshal(t *testing.T) {
 	t.Run("dInvoice - invoice unmarshal/marshal", func(t *testing.T) {
-		inv := invoice.NewInvoice("123", "customer")
+		inv := invoice.NewInvoice("John Doe")
 		if err := inv.AddItem(invoice.NewItem("456", "pen", 1000, 3)); err != nil {
 			t.Errorf("inv.AddItem() failed: %v", err)
 		}
@@ -123,7 +123,7 @@ func TestAddInvoice(t *testing.T) {
 	t.Run("builds correct DynamoDB input", func(t *testing.T) {
 		client := mocks.NewDynamoAPI()
 		strg := dynamo.New(client, "invoices")
-		inv := invoice.NewInvoice("123", "customer")
+		inv := invoice.NewInvoice("John Doe")
 
 		if err := strg.AddInvoice(inv); err != nil {
 			t.Errorf("AddInvoice(%v) failed: %v", inv, err)
@@ -151,10 +151,9 @@ func TestAddInvoice(t *testing.T) {
 	t.Run("handles DynamoDB errors", func(t *testing.T) {
 		client := mocks.NewDynamoAPI(mocks.WithPutItemError(errors.New("DynamoDB PutItem failed")))
 		strg := dynamo.New(client, "invoices")
-		inv := invoice.NewInvoice("123", "customer")
+		inv := invoice.NewInvoice("John Doe")
 
-		err := strg.AddInvoice(inv)
-		if err == nil {
+		if err := strg.AddInvoice(inv); err == nil {
 			t.Errorf("expected AddInvoice(%v) to fail", inv)
 		} else if got, want := err.Error(), `DynamoDB PutItem failed`; got != want {
 			t.Errorf("AddInvoice(%v) = %v, want %v", inv, got, want)
@@ -195,8 +194,7 @@ func TestFindInvoice(t *testing.T) {
 		strg := dynamo.New(client, "invoices")
 		invID := "123"
 
-		_, err := strg.FindInvoice(invID)
-		if err == nil {
+		if _, err := strg.FindInvoice(invID); err == nil {
 			t.Errorf("expected FindInvoice(%q) to fail", invID)
 		} else if got, want := err.Error(), `DynamoDB GetItem failed`; got != want {
 			t.Errorf("FindInvoice(%q) = %v, want %v", invID, got, want)
@@ -208,7 +206,7 @@ func TestUpdateInvoice(t *testing.T) {
 	t.Run("builds correct DynamoDB input", func(t *testing.T) {
 		client := mocks.NewDynamoAPI()
 		strg := dynamo.New(client, "invoices")
-		inv := invoice.NewInvoice("123", "customer")
+		inv := invoice.NewInvoice("John Doe")
 
 		if err := strg.UpdateInvoice(inv); err != nil {
 			t.Errorf("UpdateInvoice(%v) failed: %v", inv, err)
@@ -236,10 +234,9 @@ func TestUpdateInvoice(t *testing.T) {
 	t.Run("handles DynamoDB errors", func(t *testing.T) {
 		client := mocks.NewDynamoAPI(mocks.WithPutItemError(errors.New("DynamoDB PutItem failed")))
 		strg := dynamo.New(client, "invoices")
-		inv := invoice.NewInvoice("123", "customer")
+		inv := invoice.NewInvoice("John Doe")
 
-		err := strg.UpdateInvoice(inv)
-		if err == nil {
+		if err := strg.UpdateInvoice(inv); err == nil {
 			t.Errorf("expected UpdateInvoice(%v) to fail", inv)
 		} else if got, want := err.Error(), `DynamoDB PutItem failed`; got != want {
 			t.Errorf("UpdateInvoice(%v) = %v, want %v", inv, got, want)

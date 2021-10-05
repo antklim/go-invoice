@@ -36,17 +36,6 @@ type Invoice struct {
 	UpdatedAt    time.Time
 }
 
-func NewInvoice(id, customer string) Invoice {
-	now := time.Now()
-	return Invoice{
-		ID:           id,
-		CustomerName: customer,
-		Status:       Open,
-		CreatedAt:    now,
-		UpdatedAt:    now,
-	}
-}
-
 func (inv *Invoice) Equal(other *Invoice) bool {
 	var invDatesEqual bool
 	if inv.Date == nil && other.Date == nil {
