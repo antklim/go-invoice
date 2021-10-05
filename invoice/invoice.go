@@ -177,16 +177,6 @@ type Item struct {
 	CreatedAt   time.Time
 }
 
-func NewItem(id, productName string, price, qty int) Item {
-	return Item{
-		ID:          id,
-		ProductName: productName,
-		Price:       price,
-		Qty:         qty,
-		CreatedAt:   time.Now(),
-	}
-}
-
 func (item *Item) Equal(other *Item) bool {
 	return item.ID == other.ID &&
 		item.ProductName == other.ProductName &&

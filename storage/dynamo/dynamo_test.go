@@ -24,7 +24,7 @@ func TestInvoicePK(t *testing.T) {
 func TestInvoiceMarshalUnmarshal(t *testing.T) {
 	t.Run("dInvoice - invoice unmarshal/marshal", func(t *testing.T) {
 		inv := invoice.NewInvoice("John Doe")
-		if err := inv.AddItem(invoice.NewItem("456", "pen", 1000, 3)); err != nil {
+		if err := inv.AddItem(invoice.NewItem("pen", 1000, 3)); err != nil {
 			t.Errorf("inv.AddItem() failed: %v", err)
 		}
 

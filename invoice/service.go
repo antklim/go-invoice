@@ -66,7 +66,7 @@ func (s *Service) UpdateInvoiceCustomer(id, name string) error {
 // by provided ID or any issue occurred during invoice lookup or update an error
 // returned. Only invoices in "open" status are allowed to be updated.
 func (s *Service) AddInvoiceItem(invID, productName string, price, qty int) (Item, error) {
-	item := NewItem(uuid.NewString(), productName, price, qty)
+	item := NewItem(productName, price, qty)
 	if err := item.Validate(); err != nil {
 		return Item{}, err
 	}
@@ -207,5 +207,16 @@ func NewInvoice(customer string) Invoice {
 		Status:       Open,
 		CreatedAt:    now,
 		UpdatedAt:    now,
+	}
+}
+
+func NewItem(productName string, price, qty int) Item {
+	id := uuid.NewString()
+	return Item{
+		ID:          id,
+		ProductName: productName,
+		Price:       price,
+		Qty:         qty,
+		CreatedAt:   time.Now(),
 	}
 }
