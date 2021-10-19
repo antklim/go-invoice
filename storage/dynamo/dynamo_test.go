@@ -139,13 +139,12 @@ func TestAddInvoice(t *testing.T) {
 			t.Fatalf("input of PutItem call #%d is nil", ncall)
 		}
 
-		dinput, ok := input.(*dynamodb.PutItemInput)
-		if !ok {
+		if dinput, ok := input.(*dynamodb.PutItemInput); !ok {
 			t.Errorf("type of PutItem input is %T, want *dynamodb.PutItemInput", input)
+		} else {
+			testPutItemInput(t, inv, dinput)
+			testAddItemConditionExression(t, inv.ID, dinput)
 		}
-
-		testPutItemInput(t, inv, dinput)
-		testAddItemConditionExression(t, inv.ID, dinput)
 	})
 
 	t.Run("handles DynamoDB errors", func(t *testing.T) {
@@ -181,12 +180,11 @@ func TestFindInvoice(t *testing.T) {
 			t.Fatalf("input of GetItem call #%d is nil", ncall)
 		}
 
-		dinput, ok := input.(*dynamodb.GetItemInput)
-		if !ok {
+		if dinput, ok := input.(*dynamodb.GetItemInput); !ok {
 			t.Errorf("type of GetItem input is %T, want *dynamodb.GetItemInput", input)
+		} else {
+			testGetItemInput(t, invID, dinput)
 		}
-
-		testGetItemInput(t, invID, dinput)
 	})
 
 	t.Run("handles DynamoDB errors", func(t *testing.T) {
@@ -222,13 +220,12 @@ func TestUpdateInvoice(t *testing.T) {
 			t.Fatalf("input of PutItem call #%d is nil", ncall)
 		}
 
-		dinput, ok := input.(*dynamodb.PutItemInput)
-		if !ok {
+		if dinput, ok := input.(*dynamodb.PutItemInput); !ok {
 			t.Errorf("type of PutItem input is %T, want *dynamodb.PutItemInput", input)
+		} else {
+			testPutItemInput(t, inv, dinput)
+			testUpdateItemConditionExression(t, inv.ID, dinput)
 		}
-
-		testPutItemInput(t, inv, dinput)
-		testUpdateItemConditionExression(t, inv.ID, dinput)
 	})
 
 	t.Run("handles DynamoDB errors", func(t *testing.T) {
